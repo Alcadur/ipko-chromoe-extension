@@ -1,21 +1,24 @@
-const recipients = [];
+/**
+ * @typedef {Object} Recipient
+ * @property {(string|number)} fromNumber
+ * @property {string} recipient
+ * @property {(number|string)} recipientNumber
+ * @property {string} title
+ */
 
+const recipients = [];
 const listTableSelector = '.iwUhV';
 const detailsPageCheckSelector = '.TTPMB';
 const layerClassName = 'collect-data-layer';
 const layerSelector = `.${layerClassName}`;
 
-function query(selector) {
-    return document.querySelector(selector);
-}
-
 let currentRowIndex = 0;
 let numberOfRecipients
-let layerIsOpen = false;
+let isLayerOpen = false;
 
 async function collectData() {
     numberOfRecipients = queryAll(listTableSelector + ' tr').length;
-    if (!layerIsOpen) {
+    if (!isLayerOpen) {
         openLayer();
     }
     updateLayerInfo();
@@ -26,8 +29,8 @@ async function collectData() {
     } else {
         storage.saveRecipients(recipients);
         closeLayer();
-        await addDataCollectButton();
         currentRowIndex = 0;
+        // TODO: remove before release
         storage.getRecipients((i) => console.log('recipeints', i));
     }
 }
@@ -38,12 +41,12 @@ function openLayer() {
     layer.innerHTML = `<div class="layer-content">Pobrano <span class="collected-data-number">-1</span> z ${numberOfRecipients}</div>`
 
     document.body.appendChild(layer);
-    layerIsOpen = true;
+    isLayerOpen = true;
 }
 
 function closeLayer() {
     query(layerSelector).remove();
-    layerIsOpen = false;
+    isLayerOpen = false;
 }
 
 function updateLayerInfo() {
@@ -59,30 +62,11 @@ async function getData(index) {
         recipientNumber: query('[name$="data.recipient.account.number"]').value,
         title: query('[name$="data.title"]').value
     });
-
-    return recipients;
 }
 
 async function enterTo(index) {
     queryAll(listTableSelector + ' tr')[index].click();
     await waitFor(detailsPageCheckSelector);
-    return true;
-}
-
-function waitFor(selector) {
-    return new Promise((resolve) => {
-        waitForElement(selector, resolve);
-    })
-}
-
-function waitForElement(selector, promiseResolver) {
-    setTimeout(() => {
-        if(document.querySelector(selector)) {
-            promiseResolver();
-        } else {
-            waitForElement(selector, promiseResolver);
-        }
-    }, 150)
 }
 
 async function backToList() {

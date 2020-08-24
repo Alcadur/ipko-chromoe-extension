@@ -1,5 +1,5 @@
 const pageTitleMap = {
-    "Odbiorcy": addDataCollectButton
+    'Odbiorcy': addDataCollectButton
 }
 const tableSelector = 'form ._3082t';
 

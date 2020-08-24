@@ -15,8 +15,8 @@
         "src/global/store.js",
         "src/global/query.js",
         "src/global/waitFor.js",
-        "src/content/actions/collectData.js",
-        "src/content/contentResolver.js",
+        "src/content/actions/collect-data.js",
+        "src/content/content-resolver.js",
         "src/content/script.js"
       ]
     }

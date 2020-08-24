@@ -1,14 +1,12 @@
-// @include https://www.ipko.pl
-
+const BASE_TIMEOUT_IN_MS = 300;
 let trialCount = 0;
-let baseTimeoutInMs = 300;
 
 /**
- * Resolve when element when element will exists in DOM by given number of trials.
+ * Resolve when the element will exist in DOM by a given number of trials.
  * Between each trial is 300ms latency
  *
- * @param selector
- * @param trialLimit
+ * @param {string} selector
+ * @param {number} [trialLimit]
  * @returns {Promise<void>}
  */
 function waitFor(selector, trialLimit = 100) {
@@ -17,6 +15,15 @@ function waitFor(selector, trialLimit = 100) {
     })
 }
 
+/**
+ * Check did element with given selector exists in DOM, if not wait 300ms and check again.
+ * Checking loop will be brake when the counter will reach {@param trialLimit}
+ *
+ * @param {string} selector
+ * @param {function} promiseResolver
+ * @param {function} promiseReject
+ * @param {number} trialLimit
+ */
 function waitForElement(selector, promiseResolver, promiseReject, trialLimit) {
     setTimeout(() => {
         if (trialCount >= trialLimit) {
@@ -32,10 +39,14 @@ function waitForElement(selector, promiseResolver, promiseReject, trialLimit) {
             trialCount += 1;
             waitForElement(selector, promiseResolver, promiseReject, trialLimit);
         }
-    }, baseTimeoutInMs)
+    }, BASE_TIMEOUT_IN_MS)
 }
 
-
+/**
+ * Resolve the permission when no loader element will be on a page
+ *
+ * @returns {Promise<void>}
+ */
 function waitUntilLoaderGone() {
     const loaderSelector = 'form svg';
     return new Promise((resolve) => {
@@ -43,6 +54,12 @@ function waitUntilLoaderGone() {
     });
 }
 
+/**
+ * Will call {@param promiseResolve} when element by given selector will not exist on a page
+ *
+ * @param {string} selector
+ * @param {function} promiseResolve
+ */
 function waitUntil(selector, promiseResolve) {
     setTimeout(() => {
         if (query(selector)) {
@@ -51,7 +68,7 @@ function waitUntil(selector, promiseResolve) {
         }
 
         promiseResolve()
-    }, baseTimeoutInMs);
+    }, BASE_TIMEOUT_IN_MS);
 }
 
 
