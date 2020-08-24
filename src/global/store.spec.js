@@ -1,60 +1,77 @@
 describe('store.js', () => {
+   const RECIPIENTS_KEY = 'recipients';
+
    describe('store', () => {
+      let storage;
+
+      beforeEach(() => {
+         storage = new Storage();
+         chrome.storage.local.set.callsFake((a, b) => b());
+      });
+
       describe('save', () => {
-         it('should save data by chrome storage', () => {
+         it('should save data by chrome storage', (done) => {
             // given
             const key = 'key1';
             const value = 'value1';
 
             // when
-            storage.save(key, value);
-
-            // then
-            expect(chrome.storage.local.set.withArgs({[key]: value}).calledOnce)
-                .toBe(true, 'chrome.storage.local.set was not call with correct argument');
+            storage.save(key, value).then((savedValue) => {
+               // then
+               expect(savedValue).toEqual(savedValue);
+               expect(chrome.storage.local.set.withArgs({[key]: value}).calledOnce)
+                   .toBe(true, 'chrome.storage.local.set was not call with correct argument');
+               done();
+            });
          });
       });
 
       describe('get', () => {
-         it('should get data from chrome storage', () => {
+         it('should get data from chrome storage', (done) => {
             // given
             const key = 'key2';
-            const callback = () => {};
+            const savedValue = 'value2';
+            chrome.storage.local.get.callsFake((a, b) => b({[key]: savedValue}))
 
             // when
-            storage.get(key, callback);
-
-            // then
-            expect(chrome.storage.local.get.withArgs(key, callback).calledOnce)
-                .toBe(true, 'chrome.storage.local.get was not call with correct arguments');
+            storage.get(key).then((value) => {
+               // then
+               expect(value).toEqual(savedValue);
+               expect(chrome.storage.local.get.withArgs(key).calledOnce)
+                   .toBe(true, 'chrome.storage.local.get was not call with correct arguments');
+               done();
+            });
          });
       });
 
       describe('saveRecipients', () => {
-         it('should save recipients to chrome storage', () => {
+         it('should save recipients to chrome storage', (done) => {
             // given
             const recipients = [];
 
             // when
-            storage.saveRecipients(recipients);
-
-            // then
-            expect(chrome.storage.local.set.withArgs({[RECIPIENTS_KEY]: recipients}).calledOnce)
-                .toBe(true, 'chrome.storage.local.save was not call with correct arguments')
+            storage.saveRecipients(recipients).then(() => {
+               // then
+               expect(chrome.storage.local.set.withArgs({[RECIPIENTS_KEY]: recipients}).calledOnce)
+                   .toBe(true, 'chrome.storage.local.save was not call with correct arguments');
+               done();
+            });
          });
       });
 
+
       describe('getRecipients', () => {
-         it('should get saved recipients from chrome storage', () => {
+         it('should get saved recipients from chrome storage', (done) => {
             // given
-            const callback = () => {};
+            chrome.storage.local.get.callsFake((a, b) => b({}));
 
             // when
-            storage.getRecipients(callback);
-
-            // then
-            expect(chrome.storage.local.get.withArgs(RECIPIENTS_KEY, callback).calledOnce)
-                .toBe(true, 'chrome.storage.local.get was not called with correct arguments')
+            storage.getRecipients().then((value) => {
+               // then
+               expect(chrome.storage.local.get.withArgs(RECIPIENTS_KEY).calledOnce)
+                   .toBe(true, 'chrome.storage.local.get was not called with correct arguments');
+               done();
+            });
          });
       });
    });

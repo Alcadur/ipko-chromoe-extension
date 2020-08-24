@@ -1,36 +1,58 @@
-const RECIPIENTS_KEY = 'recipients';
+class Storage {
+    RECIPIENTS_KEY = 'recipients';
 
-const storage = {
     /**
      * Alias for chrome.storage.local.set
      *
      * @param {string} key
      * @param {*} value
+     * @return {Promise<any>}
      */
     save(key, value) {
-        chrome.storage.local.set({[key]: value});
-    },
+        return new Promise((resolve) => {
+            const saveObj = {[key]: value};
+            chrome.storage.local.set(saveObj, () => resolve(saveObj));
+        });
+    }
 
     /**
      * Alias for chrome.storage.local.get
      *
      * @param {string} key
-     * @param {function} callback
+     * @return {Promise<any>}
      */
-    get(key, callback) {
-        chrome.storage.local.get(key, callback);
-    },
+    get(key) {
+        return new Promise((resolve) => {
+            chrome.storage.local.get(key, (result) => { resolve(result[key]) })
+        });
+    }
 
     /**
      * Shortcut for save('recipients', *)
      *
      * @param {Recipient[]} recipients
+     * @return {Promise<any>}
      */
     saveRecipients(recipients) {
-        this.save(RECIPIENTS_KEY, recipients);
-    },
+        return this.save(this.RECIPIENTS_KEY, recipients);
+    }
 
-    getRecipients(callback) {
-        this.get(RECIPIENTS_KEY, callback);
+    /**
+     * Shortcut for get('recipients', callback)
+     *
+     * @return {Promise<any>}
+     */
+    getRecipients() {
+        return this.get(this.RECIPIENTS_KEY);
     }
 }
+
+/**
+ * @returns {Storage}
+ */
+function storageFactory() { return new Storage(); }
+
+/**
+ * @type {Storage}
+ */
+const storage = storageFactory();

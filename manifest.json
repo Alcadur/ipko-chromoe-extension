@@ -9,15 +9,9 @@
   "content_scripts": [
     {
       "matches": ["https://www.ipko.pl/*"],
-      "include_globs": ["https://www.ipko.pl/*"],
       "css": ["src/content/style.css"],
       "js": [
-        "src/global/store.js",
-        "src/global/query.js",
-        "src/global/waitFor.js",
-        "src/content/actions/collect-data.js",
-        "src/content/content-resolver.js",
-        "src/content/script.js"
+        "src/content/content-script-injector.js"
       ]
     }
   ],

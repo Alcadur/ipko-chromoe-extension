@@ -1,28 +1,35 @@
 describe('collect-data.js', () => {
     let spy;
+    let storageMock;
+    let waitMock;
     let backButtonAction;
-
-    beforeAll(() => {
-        mockFunction('waitFor');
-    });
-
-    afterAll(() => {
-        restoreFunction('waitFor');
-    });
+    let collectData;
 
     beforeEach(() => {
+        storageMock = jasmine.createSpyObj('storageMock', ['saveRecipients', 'getRecipients']);
+        storageMock.getRecipients.and.callFake(() => new Promise((resolve) => resolve()));
+
+        waitMock = jasmine.createSpyObj('waitMock', ['for']);
+        waitMock.for.and.callFake(() => new Promise((resolve) => resolve()));
+
         spy = jasmine.createSpy('spy');
         backButtonAction = jasmine.createSpy('backButtonAction');
-
         prepareDOM();
-
-        waitFor = jasmine.createSpy('waitForSpy').and.callFake(() => new Promise((resolve) => resolve()));
+        collectData = new CollectData(queryFactory(), storageMock, waitMock);
     });
 
     describe('collectData', () => {
         const NUMBER_OF_ROWS = 3;
 
         beforeEach(() => {
+
+            spyOn(collectData, 'openLayer');
+            spyOn(collectData, 'updateLayerInfo');
+            spyOn(collectData, 'getData');
+            spyOn(collectData, 'backToList');
+            spyOn(collectData, 'hasNext');
+            spyOn(collectData, 'closeLayer');
+
             document.body.innerHTML = `
                 <table class="iwUhV">
                     <tr></tr>
@@ -34,75 +41,75 @@ describe('collect-data.js', () => {
 
         it('should count number of all recipients', (done) => {
             // when
-            collectData().then(() => {
+            collectData.collect().then(() => {
                 // then
-                expect(numberOfRecipients).toEqual(NUMBER_OF_ROWS);
+                expect(collectData.numberOfRecipients).toEqual(NUMBER_OF_ROWS);
                 done();
             });
         });
 
         it('should open layer if it is not opened', (done) => {
             // given
-            isLayerOpen = false;
+            collectData.isLayerOpen = false;
 
             // when
-            collectData().then(() => {
+            collectData.collect().then(() => {
                 // then
-                expect(openLayer).toHaveBeenCalledTimes(1);
+                expect(collectData.openLayer).toHaveBeenCalledTimes(1);
                 done();
             });
         });
 
         it('should not open second layer when one is opened', (done) => {
             // given
-            isLayerOpen = true;
+            collectData.isLayerOpen = true;
 
             // when
-            collectData().then(() => {
+            collectData.collect().then(() => {
                 // then
-                expect(openLayer).not.toHaveBeenCalled();
+                expect(collectData.openLayer).not.toHaveBeenCalled();
                 done();
             });
         });
 
         it('should update layer info, get data and back to list', (done) => {
             // when
-            collectData().then(() => {
+            collectData.collect().then(() => {
                 // then
-                expect(updateLayerInfo).toHaveBeenCalledTimes(1);
-                expect(getData).toHaveBeenCalledTimes(1);
-                expect(backToList).toHaveBeenCalledTimes(1);
+                expect(collectData.updateLayerInfo).toHaveBeenCalledTimes(1);
+                expect(collectData.getData).toHaveBeenCalledTimes(1);
+                expect(collectData.backToList).toHaveBeenCalledTimes(1);
                 done();
             });
         });
 
         it('should call collectData until there will be no row left', (done) => {
             // given
-            currentRowIndex = 0;
-            // hasNext.and.returnValues(true, true, false);
-            spyOn(window, 'collectData');
-            collectData.and.callThrough();
+            collectData.currentRowIndex = 0;
+            spyOn(collectData, 'collect')
+            collectData.hasNext.and.returnValues(true, true, false);
+            collectData.collect.and.callThrough();
 
             // when
-            collectData().then(() => {
+            collectData.collect().then(() => {
                 // then
-                expect(collectData).toHaveBeenCalledTimes(3);
+                expect(collectData.collect).toHaveBeenCalledTimes(3);
                 done();
             });
         });
 
         it('should save recipients, clear layer and reset current row index', (done) => {
             // given
-            currentRowIndex = 555;
-            hasNext.and.returnValue(false);
+            collectData.currentRowIndex = 555;
+            collectData.hasNext.and.returnValue(false);
 
             // when
-            collectData().then(() => {
+            collectData.collect().then(() => {
                 // then
-                expect(storage.saveRecipients).toHaveBeenCalledTimes(1);
-                expect(storage.saveRecipients).toHaveBeenCalledWith(recipients);
-                expect(closeLayer).toHaveBeenCalledTimes(1);
-                expect(currentRowIndex).toEqual(0);
+                expect(storageMock.saveRecipients).toHaveBeenCalledTimes(1);
+                expect(storageMock.saveRecipients).toHaveBeenCalledWith(collectData.recipients);
+                expect(collectData.closeLayer).toHaveBeenCalledTimes(1);
+                expect(collectData.currentRowIndex).toEqual(0);
                 done();
             });
         });
@@ -115,15 +122,15 @@ describe('collect-data.js', () => {
 
         it('should add layer node to DOM', () => {
             // when
-            openLayer();
+            collectData.openLayer();
 
             // then
-            expect(document.querySelector(layerSelector)).toBeTruthy();
+            expect(document.querySelector(collectData.layerSelector)).toBeTruthy();
         });
 
         it('should contains data container', () => {
             // when
-            openLayer();
+            collectData.openLayer();
 
             // then
             expect(document.querySelector('.collected-data-number')).toBeTruthy();
@@ -131,39 +138,38 @@ describe('collect-data.js', () => {
 
         it('should mark layer as open', () => {
             // given
-            isLayerOpen = false;
+            collectData.isLayerOpen = false;
 
             // when
-            openLayer();
+            collectData.openLayer();
 
             // then
-            expect(isLayerOpen).toBeTrue();
+            expect(collectData.isLayerOpen).toBeTrue();
         });
     });
 
     describe('closeLayer', () => {
         beforeEach(() => {
-            document.body.innerHTML = `<div class="${layerClassName}"></div>`;
+            document.body.innerHTML = `<div class="${collectData.layerClassName}"></div>`;
         });
 
         it('should remove layer from DOM', () => {
             // when
-            closeLayer();
+            collectData.closeLayer();
 
             // then
-            expect(document.querySelector(layerSelector)).toBeNull();
+            expect(document.querySelector(collectData.layerSelector)).toBeNull();
         });
 
         it('should mark layer as closed', () => {
             // given
-            isLayerOpen = true;
+            collectData.isLayerOpen = true;
 
             // when
-            closeLayer();
+            collectData.closeLayer();
 
             // then
-            expect(isLayerOpen).toBe(false);
-
+            expect(collectData.isLayerOpen).toBe(false);
         });
     });
 
@@ -171,18 +177,18 @@ describe('collect-data.js', () => {
         const DATA_CLASS_NAME = 'collected-data-number';
 
         beforeEach(() => {
-            document.body.innerHTML = `<div class="${layerClassName}"><span class="${DATA_CLASS_NAME}">9999</span></div>`
+            document.body.innerHTML = `<div class="${collectData.layerClassName}"><span class="${DATA_CLASS_NAME}">9999</span></div>`
         });
 
         it('should overwrite layer number of collected data by current row index', () => {
             // given
-            currentRowIndex = 150;
+            collectData.currentRowIndex = 150;
 
             // when
-            updateLayerInfo();
+            collectData.updateLayerInfo();
 
             // then
-            expect(document.querySelector('.' + DATA_CLASS_NAME).textContent).toEqual(currentRowIndex.toString());
+            expect(document.querySelector('.' + DATA_CLASS_NAME).textContent).toEqual(collectData.currentRowIndex.toString());
         });
     });
 
@@ -194,18 +200,14 @@ describe('collect-data.js', () => {
         let title;
 
         beforeEach(() => {
-            recipients.length = 0;
+            collectData.recipients.length = 0;
 
             fromNumber = '1111111111';
             recipient = 'Best recipient';
             recipientNumber = '666999666999';
             title = `(~'.')~ ~(^.^)~ ~('.'~)`;
 
-            mockFunction('enterTo');
-        });
-
-        afterEach(() => {
-            restoreFunction('enterTo');
+            spyOn(collectData, 'enterTo');
         });
 
         it('should enter to given row index', (done) => {
@@ -214,9 +216,9 @@ describe('collect-data.js', () => {
             const rowIndex = 5;
 
             // when
-            getData(rowIndex).then(() => {
-                expect(enterTo).toHaveBeenCalledTimes(1);
-                expect(enterTo).toHaveBeenCalledWith(rowIndex);
+            collectData.getData(rowIndex).then(() => {
+                expect(collectData.enterTo).toHaveBeenCalledTimes(1);
+                expect(collectData.enterTo).toHaveBeenCalledWith(rowIndex);
                 done();
             });
         });
@@ -226,10 +228,10 @@ describe('collect-data.js', () => {
             generateDetailsForm();
 
             // when
-            getData(0).then(() => {
+            collectData.getData(0).then(() => {
                 // then
-                expect(recipients.length).toEqual(1);
-                expect(recipients[0]).toEqual({ fromNumber, recipient, recipientNumber, title });
+                expect(collectData.recipients.length).toEqual(1);
+                expect(collectData.recipients[0]).toEqual({ fromNumber, recipient, recipientNumber, title });
                 done();
             });
         });
@@ -240,9 +242,9 @@ describe('collect-data.js', () => {
             document.body.querySelector('._3pHQr').remove();
 
             // when
-            getData(0).then(() => {
+            collectData.getData(0).then(() => {
                 // then
-                expect(recipients[0]).toEqual(jasmine.objectContaining({ fromNumber: '' }));
+                expect(collectData.recipients[0]).toEqual(jasmine.objectContaining({ fromNumber: '' }));
                 done();
             });
         });
@@ -265,7 +267,7 @@ describe('collect-data.js', () => {
                 document.querySelector(`[data-test-element="row${rowIndex + 1}"]`).click = spy;
 
                 // when
-                enterTo(rowIndex).then(() => {
+                collectData.enterTo(rowIndex).then(() => {
                     // then
                     expect(spy).toHaveBeenCalledTimes(1);
                     done();
@@ -275,24 +277,19 @@ describe('collect-data.js', () => {
 
         it('should wait until details page will be loaded', (done) => {
             // when
-            enterTo(0).then(() => {
+            collectData.enterTo(0).then(() => {
                 // then
-                expect(waitFor).toHaveBeenCalledWith(detailsPageCheckSelector);
-                expect(waitFor).toHaveBeenCalledTimes(1);
+                expect(waitMock.for).toHaveBeenCalledWith(collectData.detailsPageCheckSelector);
+                expect(waitMock.for).toHaveBeenCalledTimes(1);
                 done();
             });
         });
     });
 
     describe('backToList', () => {
-        beforeEach(() => {
-            waitFor.calls.reset();
-            console.log(backToList)
-        });
-
         it('should click on back button', (done) => {
             // when
-            backToList().then(() => {
+            collectData.backToList().then(() => {
                 // then
                 expect(backButtonAction).toHaveBeenCalledTimes(1);
                 done();
@@ -301,10 +298,10 @@ describe('collect-data.js', () => {
 
         it('should wait until list view will not be loaded', (done) => {
             // when
-            backToList().then(() => {
+            collectData.backToList().then(() => {
                 // then
-                expect(waitFor).toHaveBeenCalledWith(listTableSelector);
-                expect(waitFor).toHaveBeenCalledTimes(1);
+                expect(waitMock.for).toHaveBeenCalledWith(collectData.listTableSelector);
+                expect(waitMock.for).toHaveBeenCalledTimes(1);
                 done();
             });
         });
@@ -313,11 +310,11 @@ describe('collect-data.js', () => {
     describe('hasNext', () => {
         it('should return true if current row index increased by one will be lower then number of all recipients', () => {
             // given
-            currentRowIndex = 5;
-            numberOfRecipients = 10;
+            collectData.currentRowIndex = 5;
+            collectData.numberOfRecipients = 10;
 
             // when
-            const result = hasNext();
+            const result = collectData.hasNext();
 
             // then
             expect(result).toBe(true);
@@ -325,11 +322,11 @@ describe('collect-data.js', () => {
 
         it('should return false if current row index increased by one will be grater then number of all recipients', () => {
             // given
-            currentRowIndex = 10;
-            numberOfRecipients = 10;
+            collectData.currentRowIndex = 10;
+            collectData.numberOfRecipients = 10;
 
             // when
-            const result = hasNext();
+            const result = collectData.hasNext();
 
             // then
             expect(result).toBe(false);
@@ -337,11 +334,11 @@ describe('collect-data.js', () => {
 
         it('should return false if current row index increased by one will be equal to number of all recipients', () => {
             // given
-            currentRowIndex = 9;
-            numberOfRecipients = 10;
+            collectData.currentRowIndex = 9;
+            collectData.numberOfRecipients = 10;
 
             // when
-            const result = hasNext();
+            const result = collectData.hasNext();
 
             // then
             expect(result).toBe(false);
@@ -355,7 +352,7 @@ describe('collect-data.js', () => {
                 <tr data-test-element="row2"></tr>
                 <tr data-test-element="row3"></tr>
             </table>
-            
+
             <button value="cancel" data-test-element="cancelButton"></button>
         `;
         const cancelButton = document.querySelector('[data-test-element="cancelButton"]');

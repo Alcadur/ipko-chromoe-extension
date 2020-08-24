@@ -1,10 +1,13 @@
-describe('waitFor.js', () => {
+describe('wait.js', () => {
+    let wait;
+
     const SELECTOR = 'div';
 
     let promiseResolveSpy;
     let promiseRejectSpy;
 
     beforeAll(() => {
+        wait = waitFactory();
         jasmine.clock().install()
     });
 
@@ -18,18 +21,18 @@ describe('waitFor.js', () => {
         promiseResolveSpy = jasmine.createSpy('promiseResolveSpy');
     });
 
-    describe('waitForElement', () => {
+    describe('forElement', () => {
         it('should call resolve function when element will be found', () => {
             // given
             addElementToDOM()
 
             // when
-            waitForElement(SELECTOR, promiseResolveSpy, promiseRejectSpy, 10);
-            jasmine.clock().tick(BASE_TIMEOUT_IN_MS)
+            wait.forElement(SELECTOR, promiseResolveSpy, promiseRejectSpy, 10);
+            jasmine.clock().tick(wait.BASE_TIMEOUT_IN_MS)
 
             // then
             expect(promiseResolveSpy).toHaveBeenCalledTimes(1);
-            expect(trialCount).toEqual(0);
+            expect(wait.trialCount).toEqual(0);
         });
 
         it('should try find element until it will be created in DOM and reset counter', () => {
@@ -37,18 +40,18 @@ describe('waitFor.js', () => {
             const numberOfTraysBeforeAddElement = 4;
             let countState = -1;
             setTimeout(() => {
-                countState = trialCount;
+                countState = wait.trialCount;
                 addElementToDOM();
-            }, BASE_TIMEOUT_IN_MS * numberOfTraysBeforeAddElement)
+            }, wait.BASE_TIMEOUT_IN_MS * numberOfTraysBeforeAddElement)
 
             // when
-            waitForElement(SELECTOR, promiseResolveSpy, promiseRejectSpy, 10);
-            jasmine.clock().tick(BASE_TIMEOUT_IN_MS * 5);
+            wait.forElement(SELECTOR, promiseResolveSpy, promiseRejectSpy, 10);
+            jasmine.clock().tick(wait.BASE_TIMEOUT_IN_MS * 5);
 
             // then
             expect(promiseResolveSpy).toHaveBeenCalledTimes(1);
             expect(countState).toEqual(numberOfTraysBeforeAddElement - 1);
-            expect(trialCount).toEqual(0);
+            expect(wait.trialCount).toEqual(0);
         });
 
         it('should call reject function and reset counter when element will not exists in DOM after number of trials', () => {
@@ -56,42 +59,42 @@ describe('waitFor.js', () => {
             const TRIALS_LIMIT = 5;
 
             // when
-            waitForElement(SELECTOR, promiseResolveSpy, promiseRejectSpy, TRIALS_LIMIT);
-            jasmine.clock().tick(BASE_TIMEOUT_IN_MS * (TRIALS_LIMIT + 1));
+            wait.forElement(SELECTOR, promiseResolveSpy, promiseRejectSpy, TRIALS_LIMIT);
+            jasmine.clock().tick(wait.BASE_TIMEOUT_IN_MS * (TRIALS_LIMIT + 1));
 
             // then
             expect(promiseRejectSpy).toHaveBeenCalledTimes(1);
             expect(promiseResolveSpy).not.toHaveBeenCalled();
-            expect(trialCount).toEqual(0);
+            expect(wait.trialCount).toEqual(0);
         });
     });
 
-    describe('waitUntilLoaderGone', () => {
+    describe('untilLoaderGone', () => {
         it('should call resolve function when loader will be remove from form', (done) => {
             // given
             const TRIALS_NO = 5;
             document.body.innerHTML = '<form><svg></svg></form>';
-            setTimeout(clearDOM, BASE_TIMEOUT_IN_MS * TRIALS_NO)
+            setTimeout(clearDOM, wait.BASE_TIMEOUT_IN_MS * TRIALS_NO)
 
             // when
-            waitUntilLoaderGone().then(() => {
+            wait.untilLoaderGone().then(() => {
                 // then
                 expect(true).toBe(true);
                 done();
             });
-            jasmine.clock().tick(BASE_TIMEOUT_IN_MS * TRIALS_NO);
+            jasmine.clock().tick(wait.BASE_TIMEOUT_IN_MS * TRIALS_NO);
         });
     });
 
-    describe('waitUntil', () => {
+    describe('until', () => {
         it('should call resolve function when element will be removed from DOM', () => {
             // given
             addElementToDOM();
-            setTimeout(clearDOM, BASE_TIMEOUT_IN_MS * 3);
+            setTimeout(clearDOM, wait.BASE_TIMEOUT_IN_MS * 3);
 
             // when
-            waitUntil(SELECTOR, promiseResolveSpy);
-            jasmine.clock().tick(BASE_TIMEOUT_IN_MS * 3);
+            wait.until(SELECTOR, promiseResolveSpy);
+            jasmine.clock().tick(wait.BASE_TIMEOUT_IN_MS * 3);
 
             // then
             expect(promiseResolveSpy).toHaveBeenCalledTimes(1);

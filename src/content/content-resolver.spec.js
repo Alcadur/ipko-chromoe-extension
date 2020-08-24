@@ -1,46 +1,43 @@
 describe('content-resolver.js', () => {
+    let contentResolver;
+    let waitMock;
+    let collectDataMock;
+
+    beforeEach(() => {
+        waitMock = jasmine.createSpyObj('waitMock', ['for', 'untilLoaderGone']);
+        collectDataMock = jasmine.createSpyObj('collectDataMock', ['collect'])
+
+        document.body.innerHTML = '<form><table class="_3082t"><div></div></table></form>';
+
+        contentResolver = new ContentResolver(queryFactory(), waitMock, collectDataMock);
+    });
+
     describe('updatePageContent', () => {
         beforeEach(() => {
-            mockFunction('Odbiorcy', pageTitleMap);
-        });
-
-        afterEach(() => {
-            restoreFunction('Odbiorcy');
+            spyOn(contentResolver.pageTitleMap, 'Odbiorcy');
         });
 
         it('should call method bind to page title', () => {
             // when
-            updatePageContent('Odbiorcy');
+            contentResolver.updatePageContent('Odbiorcy');
 
             // then
-            expect(pageTitleMap['Odbiorcy']).toHaveBeenCalledTimes(1);
+            expect(contentResolver.pageTitleMap['Odbiorcy']).toHaveBeenCalledTimes(1);
         });
 
         it('should not throw an error when there will be no action for page', () => {
-            expect(() => updatePageContent('NA')).not.toThrowError();
+            expect(() => contentResolver.updatePageContent('NA')).not.toThrowError();
         });
     });
 
     describe('addDataCollectButton', () => {
-        beforeEach(() => {
-            mockFunction('waitUntilLoaderGone');
-            mockFunction('waitFor');
-        });
-
-        afterEach(() => {
-            restoreFunction(
-                'waitUntilLoaderGone',
-                'waitFor'
-            );
-        });
-
         it('should wait until loader will gone and data table will be displayed', (done) => {
             // when
-            addDataCollectButton().then(() => {
+            contentResolver.addDataCollectButton().then(() => {
                 // then
-                expect(waitUntilLoaderGone).toHaveBeenCalledTimes(1);
-                expect(waitFor).toHaveBeenCalledTimes(1);
-                expect(waitFor).toHaveBeenCalledWith(tableSelector, 50);
+                expect(waitMock.untilLoaderGone).toHaveBeenCalledTimes(1);
+                expect(waitMock.for).toHaveBeenCalledTimes(1);
+                expect(waitMock.for).toHaveBeenCalledWith(contentResolver.tableSelector, 50);
                 done();
             });
         });
@@ -49,10 +46,9 @@ describe('content-resolver.js', () => {
             // given
             const ICON_URL = 'my-icon.png';
             chrome.runtime.getURL.returns(ICON_URL);
-            document.body.innerHTML = '<form><table class="_3082t"><div></div></table></form>';
 
             // when
-            addDataCollectButton().then(() => {
+            contentResolver.addDataCollectButton().then(() => {
                 const table = document.querySelector('._3082t');
                 const row = table.querySelector('div._3CHZ5.icon-container');
                 const buttonImg = row.querySelector('button img')

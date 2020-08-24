@@ -1,5 +1,13 @@
 describe('query.js', () => {
-    const NON_SELECTOR = 'no-items';
+   const NON_SELECTOR = 'no-items';
+    /**
+     * @type Query
+     */
+   let query;
+
+   beforeEach(() => {
+       query = queryFactory();
+   });
 
    describe('query', () => {
        const SINGLE_CLASS_NAME = 'single';
@@ -11,7 +19,7 @@ describe('query.js', () => {
 
        it('should test', () => {
            // when
-           const result = query(SINGLE_SELECTOR);
+           const result = query.one(SINGLE_SELECTOR);
 
 
            // then
@@ -21,7 +29,7 @@ describe('query.js', () => {
 
        it('should return undefined when non element will mache', () => {
            // when
-           const result = query(NON_SELECTOR);
+           const result = query.one(NON_SELECTOR);
 
            // then
            expect(result).toBeNull();
@@ -43,7 +51,7 @@ describe('query.js', () => {
 
         it('should return many elements mache to selector', () => {
             // when
-            const result = queryAll(MULTI_SELECTOR);
+            const result = query.all(MULTI_SELECTOR);
 
             // then
             expect(result.length).toEqual(3);
@@ -52,7 +60,7 @@ describe('query.js', () => {
 
         it('should return empty list when non element will mache', () => {
             // when
-            const result = queryAll(NON_SELECTOR);
+            const result = query.all(NON_SELECTOR);
 
             // then
             expect(result.length).toEqual(0);
