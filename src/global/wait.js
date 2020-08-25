@@ -1,3 +1,5 @@
+'use strict';
+
 class Wait {
     BASE_TIMEOUT_IN_MS = 300;
     trialCount = 0;

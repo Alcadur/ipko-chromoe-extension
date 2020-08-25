@@ -1,6 +1,8 @@
+'use strict';
+
 class ContentResolver {
     pageTitleMap = {
-        'Odbiorcy': this.addDataCollectButton
+        'Odbiorcy': this.addDataCollectButton.bind(this)
     }
     tableSelector = 'form ._3082t';
 
@@ -35,7 +37,7 @@ class ContentResolver {
         const button = document.createElement('button');
         button.type = 'button';
         button.innerHTML = `<img class="icon" src="${iconUrl}" alt="Collect users icon">Zbierz dane odbiorców`;
-        button.addEventListener('click', this.collectData.collect)
+        button.addEventListener('click', () => this.collectData.collect())
 
         return button;
     }

@@ -11,7 +11,12 @@
       "matches": ["https://www.ipko.pl/*"],
       "css": ["src/content/style.css"],
       "js": [
-        "src/content/content-script-injector.js"
+        "src/global/query.js",
+        "src/global/store.js",
+        "src/global/wait.js",
+        "src/content/actions/collect-data.js",
+        "src/content/content-resolver.js",
+        "src/content/content-script.js"
       ]
     }
   ],

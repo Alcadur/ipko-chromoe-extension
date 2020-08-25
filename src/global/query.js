@@ -1,3 +1,5 @@
+'use strict';
+
 class Query {
     /**
      * Alias for document.querySelector

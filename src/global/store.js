@@ -1,3 +1,5 @@
+'use strict';
+
 class Storage {
     RECIPIENTS_KEY = 'recipients';
 
