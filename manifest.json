@@ -15,6 +15,7 @@
         "src/global/store.js",
         "src/global/wait.js",
         "src/content/actions/collect-data.js",
+        "src/content/actions/recipients-list-search.js",
         "src/content/content-resolver.js",
         "src/content/content-script.js"
       ]

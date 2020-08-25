@@ -1,29 +1,48 @@
 'use strict';
 
 class ContentResolver {
-    pageTitleMap = {
-        'Odbiorcy': this.addDataCollectButton.bind(this)
-    }
+    /**
+     * @type {Map<string, function>}
+     */
+    pageTitleMap = (() => {
+        const map = new Map();
+
+        map.set('Odbiorcy', async () => {
+            await this.wait.untilLoaderGone();
+            await this.wait.for(this.tableSelector, 50);
+
+            this.addDataCollectButton();
+            this.recipientsListSearch.init();
+        });
+
+        return map;
+    })();
+
     tableSelector = 'form ._3082t';
 
     /**
      * @param {Query} query
      * @param {Wait} wait
      * @param {CollectData} collectData
+     * @param {RecipientsListSearch} recipientsListSearch
      */
-    constructor(query, wait, collectData) {
+    constructor(
+        query,
+        wait,
+        collectData,
+        recipientsListSearch
+    ) {
         this.query = query;
         this.wait = wait;
         this.collectData = collectData;
+        this.recipientsListSearch = recipientsListSearch;
     }
 
     updatePageContent(pageTitle) {
-        (this.pageTitleMap[pageTitle] || function () {})();
+        (this.pageTitleMap.get(pageTitle) || function () {})();
     }
 
-    async addDataCollectButton() {
-        await this.wait.untilLoaderGone();
-        await this.wait.for(this.tableSelector, 50);
+    addDataCollectButton() {
         const node = this.query.one(this.tableSelector);
         const collectButton = this.createCollectButton();
         const newRow = this.createNewRow();
@@ -59,7 +78,14 @@ class ContentResolver {
 /**
  * @returns {ContentResolver}
  */
-function contentResolverFactory() { return new ContentResolver(queryFactory(), waitFactory(), collectDataFactory()); }
+function contentResolverFactory() {
+    return new ContentResolver(
+        queryFactory(),
+        waitFactory(),
+        collectDataFactory(),
+        recipientsListSearchFactory()
+    );
+}
 
 /**
  * @type {ContentResolver}

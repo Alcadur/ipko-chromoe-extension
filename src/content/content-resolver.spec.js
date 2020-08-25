@@ -1,20 +1,22 @@
 describe('content-resolver.js', () => {
     let contentResolver;
     let waitMock;
+    let recipientsListSearchMock;
     let collectDataMock;
 
     beforeEach(() => {
         waitMock = jasmine.createSpyObj('waitMock', ['for', 'untilLoaderGone']);
         collectDataMock = jasmine.createSpyObj('collectDataMock', ['collect'])
+        recipientsListSearchMock = jasmine.createSpyObj('recipientsListSearchMock', ['init'])
 
         document.body.innerHTML = '<form><table class="_3082t"><div></div></table></form>';
 
-        contentResolver = new ContentResolver(queryFactory(), waitMock, collectDataMock);
+        contentResolver = new ContentResolver(queryFactory(), waitMock, collectDataMock, recipientsListSearchMock);
     });
 
     describe('updatePageContent', () => {
         beforeEach(() => {
-            spyOn(contentResolver.pageTitleMap, 'Odbiorcy');
+            contentResolver.pageTitleMap.set('Odbiorcy', jasmine.createSpy('Odbiorcy'));
         });
 
         it('should call method bind to page title', () => {
@@ -22,7 +24,7 @@ describe('content-resolver.js', () => {
             contentResolver.updatePageContent('Odbiorcy');
 
             // then
-            expect(contentResolver.pageTitleMap['Odbiorcy']).toHaveBeenCalledTimes(1);
+            expect(contentResolver.pageTitleMap.get('Odbiorcy')).toHaveBeenCalledTimes(1);
         });
 
         it('should not throw an error when there will be no action for page', () => {
@@ -31,32 +33,47 @@ describe('content-resolver.js', () => {
     });
 
     describe('addDataCollectButton', () => {
-        it('should wait until loader will gone and data table will be displayed', (done) => {
-            // when
-            contentResolver.addDataCollectButton().then(() => {
-                // then
-                expect(waitMock.untilLoaderGone).toHaveBeenCalledTimes(1);
-                expect(waitMock.for).toHaveBeenCalledTimes(1);
-                expect(waitMock.for).toHaveBeenCalledWith(contentResolver.tableSelector, 50);
-                done();
-            });
-        });
-
-        it('should add collect data button on top of table', (done) => {
+        it('should add collect data button on top of table', () => {
             // given
             const ICON_URL = 'my-icon.png';
             chrome.runtime.getURL.returns(ICON_URL);
 
             // when
-            contentResolver.addDataCollectButton().then(() => {
-                const table = document.querySelector('._3082t');
-                const row = table.querySelector('div._3CHZ5.icon-container');
-                const buttonImg = row.querySelector('button img')
+            contentResolver.addDataCollectButton();
 
-                expect(row).toBeTruthy();
-                expect(buttonImg.classList).toContain('icon');
-                expect(buttonImg.getAttribute('src')).toEqual(ICON_URL);
-                done();
+            // then
+            const table = document.querySelector('._3082t');
+            const row = table.querySelector('div._3CHZ5.icon-container');
+            const buttonImg = row.querySelector('button img')
+
+            expect(row).toBeTruthy();
+            expect(buttonImg.classList).toContain('icon');
+            expect(buttonImg.getAttribute('src')).toEqual(ICON_URL);
+        });
+    });
+
+    describe('pageTitleMap', () => {
+        describe('Odbiorcy', () => {
+            it('should wait until loader will be gone and the table will be shown before any other action', (done) => {
+                // given
+                let untilLoaderGoneResolver = () => {};
+                let forResolver = () => {};
+                spyOn(contentResolver, 'addDataCollectButton');
+
+                waitMock.untilLoaderGone.and.returnValue(new Promise((resolve) => untilLoaderGoneResolver = resolve));
+                waitMock.for.and.returnValue(new Promise((resolve) => forResolver = resolve));
+
+                // when
+                contentResolver.pageTitleMap.get('Odbiorcy')().then(() => {
+                    // then
+                    expect(contentResolver.addDataCollectButton).toHaveBeenCalledTimes(1);
+                    expect(recipientsListSearchMock.init).toHaveBeenCalledTimes(1);
+                    done();
+                });
+
+                // when 2
+                untilLoaderGoneResolver();
+                forResolver();
             });
         });
     });
