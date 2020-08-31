@@ -3,28 +3,30 @@ describe('content-resolver.js', () => {
     let waitMock;
     let recipientsListSearchMock;
     let collectDataMock;
+    let paymentLiveRecipientSearchMock;
 
     beforeEach(() => {
-        waitMock = jasmine.createSpyObj('waitMock', ['for', 'untilLoaderGone']);
-        collectDataMock = jasmine.createSpyObj('collectDataMock', ['collect'])
-        recipientsListSearchMock = jasmine.createSpyObj('recipientsListSearchMock', ['init'])
+        waitMock = jasmine.createSpyObj('waitMock', {for: Promise.resolve(), untilLoaderGone: Promise.resolve('')});
+        collectDataMock = jasmine.createSpyObj('collectDataMock', ['collect']);
+        recipientsListSearchMock = jasmine.createSpyObj('recipientsListSearchMock', ['init']);
+        paymentLiveRecipientSearchMock = jasmine.createSpyObj('paymentLiveRecipientSearchMock', ['init']);
 
         document.body.innerHTML = '<form><table class="_3082t"><div></div></table></form>';
 
-        contentResolver = new ContentResolver(queryFactory(), waitMock, collectDataMock, recipientsListSearchMock);
+        contentResolver = new ContentResolver(queryFactory(), waitMock, collectDataMock, recipientsListSearchMock, paymentLiveRecipientSearchMock);
     });
 
     describe('updatePageContent', () => {
         beforeEach(() => {
-            contentResolver.pageTitleMap.set('Odbiorcy', jasmine.createSpy('Odbiorcy'));
+            contentResolver.pageTitleMap.set('OdbiorcyKrajowi', jasmine.createSpy('OdbiorcyKrajowi'));
         });
 
         it('should call method bind to page title', () => {
             // when
-            contentResolver.updatePageContent('Odbiorcy');
+            contentResolver.updatePageContent('OdbiorcyKrajowi');
 
             // then
-            expect(contentResolver.pageTitleMap.get('Odbiorcy')).toHaveBeenCalledTimes(1);
+            expect(contentResolver.pageTitleMap.get('OdbiorcyKrajowi')).toHaveBeenCalledTimes(1);
         });
 
         it('should not throw an error when there will be no action for page', () => {
@@ -53,7 +55,7 @@ describe('content-resolver.js', () => {
     });
 
     describe('pageTitleMap', () => {
-        describe('Odbiorcy', () => {
+        describe('OdbiorcyKrajowi', () => {
             it('should wait until loader will be gone and the table will be shown before any other action', (done) => {
                 // given
                 let untilLoaderGoneResolver = () => {};
@@ -64,7 +66,7 @@ describe('content-resolver.js', () => {
                 waitMock.for.and.returnValue(new Promise((resolve) => forResolver = resolve));
 
                 // when
-                contentResolver.pageTitleMap.get('Odbiorcy')().then(() => {
+                contentResolver.pageTitleMap.get('OdbiorcyKrajowi')().then(() => {
                     // then
                     expect(contentResolver.addDataCollectButton).toHaveBeenCalledTimes(1);
                     expect(recipientsListSearchMock.init).toHaveBeenCalledTimes(1);
@@ -74,6 +76,38 @@ describe('content-resolver.js', () => {
                 // when 2
                 untilLoaderGoneResolver();
                 forResolver();
+            });
+        });
+
+        describe('PrzelewyKrajowy', () => {
+            const actionName = 'PrzelewyKrajowy';
+            let action;
+
+            beforeEach(() => {
+               action = contentResolver.pageTitleMap.get(actionName)
+            });
+
+            it('should wait until loader gone and input will be shown', (done) => {
+                // given
+                paymentLiveRecipientSearchMock.searchInputSelector = 'input.selector';
+
+                // when
+                action().then(() => {
+                    // then
+                    expect(waitMock.untilLoaderGone).toHaveBeenCalledTimes(1);
+                    expect(waitMock.for).toHaveBeenCalledTimes(1);
+                    expect(waitMock.for).toHaveBeenCalledWith(paymentLiveRecipientSearchMock.searchInputSelector, 50);
+                    done();
+                });
+            });
+
+            it('should init payment live search', (done) => {
+                // when
+                action().then(() => {
+                    // then
+                    expect(paymentLiveRecipientSearchMock.init).toHaveBeenCalledTimes(1);
+                    done();
+                });
             });
         });
     });

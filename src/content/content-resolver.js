@@ -7,12 +7,18 @@ class ContentResolver {
     pageTitleMap = (() => {
         const map = new Map();
 
-        map.set('Odbiorcy', async () => {
+        map.set('OdbiorcyKrajowi', async () => {
             await this.wait.untilLoaderGone();
             await this.wait.for(this.tableSelector, 50);
 
             this.addDataCollectButton();
             this.recipientsListSearch.init();
+        });
+
+        map.set('PrzelewyKrajowy', async () => {
+            await this.wait.untilLoaderGone();
+            await this.wait.for(this.paymentLiveRecipientSearch.searchInputSelector, 50);
+            await this.paymentLiveRecipientSearch.init();
         });
 
         return map;
@@ -25,17 +31,20 @@ class ContentResolver {
      * @param {Wait} wait
      * @param {CollectData} collectData
      * @param {RecipientsListSearch} recipientsListSearch
+     * @param {PaymentLiveRecipientSearch} paymentLiveRecipientSearch
      */
     constructor(
         query,
         wait,
         collectData,
-        recipientsListSearch
+        recipientsListSearch,
+        paymentLiveRecipientSearch
     ) {
         this.query = query;
         this.wait = wait;
         this.collectData = collectData;
         this.recipientsListSearch = recipientsListSearch;
+        this.paymentLiveRecipientSearch = paymentLiveRecipientSearch;
     }
 
     updatePageContent(pageTitle) {
@@ -83,7 +92,8 @@ function contentResolverFactory() {
         queryFactory(),
         waitFactory(),
         collectDataFactory(),
-        recipientsListSearchFactory()
+        recipientsListSearchFactory(),
+        paymentLiveRecipientSearchFactory()
     );
 }
 

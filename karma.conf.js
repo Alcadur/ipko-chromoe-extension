@@ -17,7 +17,7 @@ module.exports = function(config) {
     files: [
       'tests-setup/tests-helpers.js',
       'tests-setup/test-init-script.js',
-      'src/global/*.js',
+      'src/shared/*.js',
       'src/content/**/*.js',
     ],
 

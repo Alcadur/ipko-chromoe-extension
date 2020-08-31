@@ -42,7 +42,7 @@ class Storage {
     /**
      * Shortcut for get('recipients', callback)
      *
-     * @return {Promise<any>}
+     * @return {Promise<Recipient[]>}
      */
     getRecipients() {
         return this.get(this.RECIPIENTS_KEY);

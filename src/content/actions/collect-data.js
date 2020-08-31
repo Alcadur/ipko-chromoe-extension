@@ -4,6 +4,7 @@
  * @property {string} recipient
  * @property {(number|string)} recipientNumber
  * @property {string} title
+ * @property {(string|number)} [defaultAmount]
  */
 class CollectData {
     recipients = [];
@@ -41,8 +42,6 @@ class CollectData {
             await this.storage.saveRecipients(this.recipients);
             this.closeLayer();
             this.currentRowIndex = 0;
-            // TODO: remove before release
-            this.storage.getRecipients().then((i) => console.log('recipeints', i));
         }
     }
 

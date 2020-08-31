@@ -3,6 +3,7 @@
 class ContentScript {
     lastPage = null;
     titleSelector = 'h1.TTPMB';
+    selectedTabSelector = '._15ytj';
     pageChangeHandlerBind = this.pageChangeHandler.bind(this);
 
     /**
@@ -16,7 +17,7 @@ class ContentScript {
         this.contentResolver = contentResolver;
 
         document.addEventListener('click', () => this.pageClickHandler());
-        document.addEventListener('DOMContentLoaded ', this.pageChangeHandlerBind)
+        document.addEventListener('DOMContentLoaded ', this.pageChangeHandlerBind);
     }
 
     async pageClickHandler() {
@@ -25,6 +26,7 @@ class ContentScript {
         document.removeEventListener('click', this.pageChangeHandlerBind);
         try {
             await wait.for(this.titleSelector, trialLimit);
+            await wait.untilLoaderGone();
             this.pageChangeHandler();
         } catch (e) {
         }
@@ -32,7 +34,9 @@ class ContentScript {
     }
 
     pageChangeHandler() {
-        const newPage = (this.query.one(this.titleSelector) || {}).innerText || '';
+        const newTab = (this.query.one(this.selectedTabSelector) || {}).innerText || '';
+        const newPage = ((this.query.one(this.titleSelector) || {}).innerText + newTab) || '' ;
+
         if (newPage !== this.lastPage) {
             this.lastPage = newPage;
             this.contentResolver.updatePageContent(newPage);

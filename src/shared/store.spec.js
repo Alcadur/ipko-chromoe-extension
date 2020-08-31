@@ -66,7 +66,7 @@ describe('store.js', () => {
             chrome.storage.local.get.callsFake((a, b) => b({}));
 
             // when
-            storage.getRecipients().then((value) => {
+            storage.getRecipients().then(() => {
                // then
                expect(chrome.storage.local.get.withArgs(RECIPIENTS_KEY).calledOnce)
                    .toBe(true, 'chrome.storage.local.get was not called with correct arguments');

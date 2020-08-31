@@ -11,15 +11,20 @@
       "matches": ["https://www.ipko.pl/*"],
       "css": ["src/content/style.css"],
       "js": [
-        "src/global/query.js",
-        "src/global/store.js",
-        "src/global/wait.js",
+        "src/shared/query.js",
+        "src/shared/store.js",
+        "src/shared/wait.js",
         "src/content/actions/collect-data.js",
         "src/content/actions/recipients-list-search.js",
+        "src/content/actions/payment-live-recipient-search.js",
         "src/content/content-resolver.js",
         "src/content/content-script.js"
       ]
     }
   ],
+  "browser_action": {
+    "default_popup": "src/popup/popup.html"
+  },
+  "options_page": "src/options/options.html" ,
   "manifest_version": 2
 }

@@ -1,1 +1,1 @@
-disableDocumentAddEvent();
+disableDocumentAndWindowAddEvent();

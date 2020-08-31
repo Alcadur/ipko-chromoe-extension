@@ -39,3 +39,24 @@
 .collect-data-layer .collected-data-number {
     margin: 0 4px;
 }
+
+.recipient-search-list {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+
+    border: 1px solid #B7B7B7;
+    border-radius: 0 0 4px 4px;
+    z-index: 10;
+    background: white;
+}
+
+.recipient-search-list ul {
+    list-style: none;
+    padding: 5px 0 0 0;
+}
+
+.recipient-search-list ul li {
+    margin: 0 0 5px 5px;
+}

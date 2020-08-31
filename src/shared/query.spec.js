@@ -14,10 +14,10 @@ describe('query.js', () => {
        const SINGLE_SELECTOR = `.${SINGLE_CLASS_NAME}`;
 
        beforeAll(() => {
-           document.body.innerHTML = `<div class="${SINGLE_CLASS_NAME}"></div>`;
+           document.body.innerHTML = `<div class="${SINGLE_CLASS_NAME}"></div><div class="${SINGLE_CLASS_NAME}"></div>`;
        });
 
-       it('should test', () => {
+       it('should return single element', () => {
            // when
            const result = query.one(SINGLE_SELECTOR);
 
