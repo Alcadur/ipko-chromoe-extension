@@ -8,7 +8,6 @@ class Query {
      * @param {Element} [parentElement=document.body]
      * @returns {Element}
      */
-    // TODO: tests for parent element
     one(selector, parentElement = document.body) {
         return parentElement.querySelector(selector);
     }

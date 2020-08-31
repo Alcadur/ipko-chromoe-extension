@@ -14,7 +14,12 @@ describe('query.js', () => {
        const SINGLE_SELECTOR = `.${SINGLE_CLASS_NAME}`;
 
        beforeAll(() => {
-           document.body.innerHTML = `<div class="${SINGLE_CLASS_NAME}"></div><div class="${SINGLE_CLASS_NAME}"></div>`;
+           document.body.innerHTML = `
+<div class="child"></div>
+<div class="${SINGLE_CLASS_NAME}"><div class="child works"></div></div>
+<div class="${SINGLE_CLASS_NAME}"><div class="child"></div><div class="child"></div></div>
+<div class="child"></div>
+`;
        });
 
        it('should return single element', () => {
@@ -34,16 +39,34 @@ describe('query.js', () => {
            // then
            expect(result).toBeNull();
        });
+
+       it('should return only object from parent element', () => {
+           // given
+           const parent = document.querySelector(SINGLE_SELECTOR);
+
+           // when
+
+           const result = query.one('.child', parent);
+
+           // then
+           expect(result.classList).toContain('works');
+       });
    });
 
     describe('queryAll', () => {
+        const PARENT_CLASS_NAME = 'parent';
+        const PARENT_SELECTOR = `.${PARENT_CLASS_NAME}`;
         const MULTI_CLASS_NAME = 'many';
         const MULTI_SELECTOR = `.${MULTI_CLASS_NAME}`;
+        const NESTED_EXTRA_CLASS = 'works';
 
         beforeEach(() => {
             document.body.innerHTML = `
-                <div></div>
                 <div class="${MULTI_CLASS_NAME}"></div>
+                <div class="${PARENT_CLASS_NAME}">
+                    <div class="${MULTI_CLASS_NAME} ${NESTED_EXTRA_CLASS}"></div>
+                    <div class="${MULTI_CLASS_NAME} ${NESTED_EXTRA_CLASS}"></div>
+                </div>
                 <div class="${MULTI_CLASS_NAME}"></div>
                 <div class="${MULTI_CLASS_NAME}"></div>
             `
@@ -54,7 +77,7 @@ describe('query.js', () => {
             const result = query.all(MULTI_SELECTOR);
 
             // then
-            expect(result.length).toEqual(3);
+            expect(result.length).toEqual(document.querySelectorAll(MULTI_SELECTOR).length);
             result.forEach(element => expect(element.classList).toContain(MULTI_CLASS_NAME));
         });
 
@@ -64,6 +87,20 @@ describe('query.js', () => {
 
             // then
             expect(result.length).toEqual(0);
+        });
+
+        it('should return only elements from parent', () => {
+            // given
+            const parent = document.querySelector(PARENT_SELECTOR);
+
+            // when
+            const result = query.all(MULTI_SELECTOR, parent);
+
+            // then
+            expect(result.length).toEqual(parent.querySelectorAll(MULTI_SELECTOR).length);
+            result.forEach(element =>
+                expect(element.classList).toContain(NESTED_EXTRA_CLASS)
+            )
         });
     });
 });
