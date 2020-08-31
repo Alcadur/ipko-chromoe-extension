@@ -45,7 +45,7 @@ describe('payment-live-recipient-search', () => {
             expect(paymentLiveRecipientSearch.rowTemplate.textContent).toContain('$recipient');
         });
 
-        it('should bind event', async () => {
+        it('should bind events', async () => {
             // given
             const inputField = document.body.querySelector('textarea');
             spyOn(inputField, 'addEventListener');
@@ -58,8 +58,9 @@ describe('payment-live-recipient-search', () => {
             expect(window.addEventListener).toHaveBeenCalledWith('resize', paymentLiveRecipientSearch.updateWrapperPosition);
             expect(document.addEventListener).toHaveBeenCalledTimes(1);
             expect(document.addEventListener).toHaveBeenCalledWith('click', paymentLiveRecipientSearch.documentClickHandler);
-            expect(paymentLiveRecipientSearch.searchInputField.addEventListener).toHaveBeenCalledTimes(1);
+            expect(paymentLiveRecipientSearch.searchInputField.addEventListener).toHaveBeenCalledTimes(2);
             expect(paymentLiveRecipientSearch.searchInputField.addEventListener).toHaveBeenCalledWith('input', paymentLiveRecipientSearch.filter);
+            expect(paymentLiveRecipientSearch.searchInputField.addEventListener).toHaveBeenCalledWith('focus', paymentLiveRecipientSearch.filter);
         });
     });
 

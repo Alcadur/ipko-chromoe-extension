@@ -30,6 +30,7 @@ class PaymentLiveRecipientSearch {
         window.addEventListener('resize', this.updateWrapperPosition);
         document.addEventListener('click', this.documentClickHandler);
         this.searchInputField.addEventListener('input', this.filter);
+        this.searchInputField.addEventListener('focus', this.filter);
     }
 
     /**
