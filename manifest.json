@@ -16,6 +16,7 @@
         "src/shared/wait.js",
         "src/content/actions/collect-data.js",
         "src/content/actions/recipients-list-search.js",
+        "src/content/actions/payment-form.service.js",
         "src/content/actions/payment-live-recipient-search.js",
         "src/content/content-resolver.js",
         "src/content/content-script.js"

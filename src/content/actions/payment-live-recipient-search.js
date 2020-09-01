@@ -1,10 +1,12 @@
 class PaymentLiveRecipientSearch {
+    currentSelectedIndex = -1;
     searchInputSelector = 'textarea[name$="data.recipient.name"]';
     searchInputField;
     /**
      * @type {Recipient[]}
      */
     recipients = [];
+    filteredRecipients = []
     rowTemplate;
     wrapper = document.createElement('div');
     wrapperClassName = 'recipient-search-list';
@@ -12,10 +14,12 @@ class PaymentLiveRecipientSearch {
     /**
      * @param {Query} query
      * @param {Storage} storage
+     * @param {PaymentFormService} paymentFormService
      */
-    constructor(query, storage) {
+    constructor(query, storage, paymentFormService) {
         this.query = query;
         this.storage = storage;
+        this.paymentFormService = paymentFormService;
     }
 
     async init() {
@@ -30,6 +34,7 @@ class PaymentLiveRecipientSearch {
         window.addEventListener('resize', this.updateWrapperPosition);
         document.addEventListener('click', this.documentClickHandler);
         this.searchInputField.addEventListener('input', this.filter);
+        this.searchInputField.addEventListener('keyup', this.searchInputKeyDownHandle);
         this.searchInputField.addEventListener('focus', this.filter);
     }
 
@@ -50,6 +55,7 @@ class PaymentLiveRecipientSearch {
      * @type {function}
      */
     filter = function() {
+        this.currentSelectedIndex = -1;
         this.removeSearchList();
 
         if (this.searchInputField.value.length < 2) {
@@ -59,9 +65,9 @@ class PaymentLiveRecipientSearch {
         this.addSearchList();
         const list = query.one('ul', this.wrapper);
         const filterExpresion = new RegExp(this.searchInputField.value, 'i');
-        const filteredRecipients = this.recipients.filter(recipient => filterExpresion.test(recipient.recipient));
+        this.filteredRecipients = this.recipients.filter(recipient => filterExpresion.test(recipient.recipient));
 
-        filteredRecipients.forEach(recipient => {
+        this.filteredRecipients.forEach(recipient => {
             const parsedTemplate = this.rowTemplate.cloneNode(true);
             parsedTemplate.textContent = recipient.recipient;
             list.appendChild(parsedTemplate);
@@ -82,6 +88,71 @@ class PaymentLiveRecipientSearch {
     removeSearchList() {
         this.wrapper.remove();
         this.query.one('ul', this.wrapper).innerHTML = '';
+    }
+
+    searchInputKeyDownHandle = function (event) {
+        if (this.filteredRecipients.length === 0) {
+            return;
+        }
+
+        switch (event.key) {
+            case 'ArrowDown': this.arrowDownHandle(); break;
+            case 'ArrowUp': this.arrowUpHandle(); break;
+            case 'Enter': this.enterHandle(); break;
+        }
+
+    }.bind(this);
+
+    /**
+     * @private
+     */
+    arrowDownHandle() {
+        this.currentSelectedIndex += 1;
+
+        if (this.currentSelectedIndex >= this.filteredRecipients.length) {
+            this.currentSelectedIndex = 0;
+        }
+
+        this.selectRow(this.currentSelectedIndex);
+    }
+
+    /**
+     * @private
+     */
+    arrowUpHandle() {
+        this.currentSelectedIndex -= 1;
+
+        if (this.currentSelectedIndex < 0) {
+            this.currentSelectedIndex = this.filteredRecipients.length - 1;
+        }
+
+        this.selectRow(this.currentSelectedIndex);
+    }
+
+    /**
+     * @private
+     */
+    enterHandle() {
+        const selectedRecipient = this.filteredRecipients[this.currentSelectedIndex];
+        this.removeSearchList();
+        this.currentSelectedIndex = -1;
+        this.filteredRecipients = [];
+
+        this.paymentFormService.fill(selectedRecipient);
+    }
+
+    /**
+     * @private
+     * @param {number} rowIndex
+     */
+    selectRow(rowIndex) {
+        const selectedRow = this.query.one('li.selected', this.wrapper);
+        if (selectedRow) {
+            selectedRow.classList.remove('selected');
+        }
+
+        this.query.all('li', this.wrapper)[rowIndex]
+            .classList.add('selected');
     }
 
     /**
@@ -105,7 +176,7 @@ class PaymentLiveRecipientSearch {
 /**
  * @returns {PaymentLiveRecipientSearch}
  */
-function paymentLiveRecipientSearchFactory() { return new PaymentLiveRecipientSearch(queryFactory(), storageFactory()) }
+function paymentLiveRecipientSearchFactory() { return new PaymentLiveRecipientSearch(queryFactory(), storageFactory(), paymentFormServiceFactory()) }
 
 /**
  * @type {PaymentLiveRecipientSearch}

@@ -58,5 +58,11 @@
 }
 
 .recipient-search-list ul li {
-    margin: 0 0 5px 5px;
+    margin: 0 5px 5px 5px;
+    padding: 5px;
+
+}
+.recipient-search-list ul li.selected,
+.recipient-search-list ul li:hover {
+    background: #f2f2f2;
 }

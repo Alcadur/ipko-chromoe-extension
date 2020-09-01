@@ -12,13 +12,18 @@ describe('payment-live-recipient-search', () => {
      * @type {Recipient[]}
      */
     let recipients;
+    /**
+     * @type {PaymentFormService}
+     */
+    let paymentFormServiceMock;
 
     beforeEach(() => {
         document.addEventListener.calls.reset();
         window.addEventListener.calls.reset();
         recipients = [];
+        paymentFormServiceMock = jasmine.createSpyObj('paymentFormServiceMock', ['fill']);
         storageMock = jasmine.createSpyObj('storageMock', {getRecipients: Promise.resolve(recipients)});
-        paymentLiveRecipientSearch = new PaymentLiveRecipientSearch(queryFactory(), storageMock);
+        paymentLiveRecipientSearch = new PaymentLiveRecipientSearch(queryFactory(), storageMock, paymentFormServiceMock);
         document.body.innerHTML = `<textarea name="${SEARCH_FIELD_NAME}">`;
     });
 
@@ -58,9 +63,10 @@ describe('payment-live-recipient-search', () => {
             expect(window.addEventListener).toHaveBeenCalledWith('resize', paymentLiveRecipientSearch.updateWrapperPosition);
             expect(document.addEventListener).toHaveBeenCalledTimes(1);
             expect(document.addEventListener).toHaveBeenCalledWith('click', paymentLiveRecipientSearch.documentClickHandler);
-            expect(paymentLiveRecipientSearch.searchInputField.addEventListener).toHaveBeenCalledTimes(2);
+            expect(paymentLiveRecipientSearch.searchInputField.addEventListener).toHaveBeenCalledTimes(3);
             expect(paymentLiveRecipientSearch.searchInputField.addEventListener).toHaveBeenCalledWith('input', paymentLiveRecipientSearch.filter);
             expect(paymentLiveRecipientSearch.searchInputField.addEventListener).toHaveBeenCalledWith('focus', paymentLiveRecipientSearch.filter);
+            expect(paymentLiveRecipientSearch.searchInputField.addEventListener).toHaveBeenCalledWith('keyup', paymentLiveRecipientSearch.searchInputKeyDownHandle);
         });
     });
 
@@ -230,5 +236,194 @@ describe('payment-live-recipient-search', () => {
             expect(paymentLiveRecipientSearch.searchInputField.removeEventListener).toHaveBeenCalledWith('input', paymentLiveRecipientSearch.filter);
             expect(window.removeEventListener).toHaveBeenCalledWith('resize', paymentLiveRecipientSearch.updateWrapperPosition);
         });
+    });
+
+    describe('searchInputKeyDownHandle', () => {
+        const eventUp = { key: 'ArrowUp' };
+        const eventDown = { key: 'ArrowDown' };
+        const eventEnter = { key: 'Enter' };
+
+        let recipients;
+
+        beforeEach(async () => {
+            document.body.innerHTML = '<textarea name="prefix-data.recipient.name"></textarea>';
+            await paymentLiveRecipientSearch.init();
+            recipients = [
+                { recipient: '00123' },
+                { recipient: '40056' },
+                { recipient: '78009' }
+            ];
+            paymentLiveRecipientSearch.recipients = recipients;
+            paymentLiveRecipientSearch.searchInputField.value = '00';
+            paymentLiveRecipientSearch.filter();
+        });
+
+        it('should be only one selected row at time', () => {
+            // given
+
+            // when
+            paymentLiveRecipientSearch.searchInputKeyDownHandle(eventDown);
+            paymentLiveRecipientSearch.searchInputKeyDownHandle(eventDown);
+
+            // then
+            expect(document.querySelectorAll('li.selected').length).toEqual(1);
+        });
+
+        describe('moveDown', () => {
+            it('should mark first element as selected when current selected element index will be equal -1', () => {
+                // given
+                paymentLiveRecipientSearch.currentSelectedIndex = -1;
+
+                // when
+                paymentLiveRecipientSearch.searchInputKeyDownHandle(eventDown);
+
+                // then
+                expect(getLiAt(0).className).toContain('selected');
+            });
+
+            it(`should move selection down`, () => {
+                // when
+                paymentLiveRecipientSearch.searchInputKeyDownHandle(eventDown);
+                // then
+                expect(getLiAt(0).className).toContain('selected');
+
+                // when
+                paymentLiveRecipientSearch.searchInputKeyDownHandle(eventDown);
+                // then
+                expect(getLiAt(1).className).toContain('selected');
+
+                // when
+                paymentLiveRecipientSearch.searchInputKeyDownHandle(eventDown);
+                // then
+                expect(getLiAt(2).className).toContain('selected');
+            });
+
+            it('should back to first element when list is over', () => {
+                // given
+                paymentLiveRecipientSearch.currentSelectedIndex = recipients.length - 1;
+
+                // when
+                paymentLiveRecipientSearch.searchInputKeyDownHandle(eventDown);
+
+                // then
+                expect(getLiAt(0).classList).toContain('selected');
+                expect(paymentLiveRecipientSearch.currentSelectedIndex).toEqual(0);
+            });
+
+            it('should not throw error when filtered recipients array is empty', () => {
+                // given
+                paymentLiveRecipientSearch.currentSelectedIndex = -1;
+                paymentLiveRecipientSearch.filteredRecipients = [];
+
+                // when
+                // then
+                expect(() => paymentLiveRecipientSearch.searchInputKeyDownHandle(eventDown)).not.toThrow();
+            });
+        });
+
+        describe('arrowUpHandle', () => {
+            it('should move to last element when current selected element index will be equal -1', () => {
+                // given
+                paymentLiveRecipientSearch.currentSelectedIndex = -1;
+
+                // when
+                paymentLiveRecipientSearch.searchInputKeyDownHandle(eventUp);
+
+                // then
+                expect(getLiAt(2).className).toContain('selected');
+            });
+
+            it(`should move selection up`, () => {
+                // given
+                paymentLiveRecipientSearch.currentSelectedIndex = recipients.length;
+
+                // when
+                paymentLiveRecipientSearch.searchInputKeyDownHandle(eventUp);
+                // then
+                expect(getLiAt(2).className).toContain('selected');
+
+                // when
+                paymentLiveRecipientSearch.searchInputKeyDownHandle(eventUp);
+                // then
+                expect(getLiAt(1).className).toContain('selected');
+
+                // when
+                paymentLiveRecipientSearch.searchInputKeyDownHandle(eventUp);
+                // then
+                expect(getLiAt(0).className).toContain('selected');
+            });
+
+            it('should move to last element when first element is selected', () => {
+                // given
+                paymentLiveRecipientSearch.currentSelectedIndex = 0;
+
+                // when
+                paymentLiveRecipientSearch.searchInputKeyDownHandle(eventUp);
+
+                // then
+                expect(getLiAt(2).classList).toContain('selected');
+                expect(paymentLiveRecipientSearch.currentSelectedIndex).toEqual(2);
+            });
+
+            it('should not throw error when filtered recipients array is empty', () => {
+                // given
+                paymentLiveRecipientSearch.currentSelectedIndex = -1;
+                paymentLiveRecipientSearch.filteredRecipients = [];
+
+                // when
+                // then
+                expect(() => paymentLiveRecipientSearch.searchInputKeyDownHandle(eventUp)).not.toThrow();
+            });
+        });
+
+        describe('enterHandle', () => {
+            beforeEach(() => {
+                document.body.innerHTML = '';
+                document.body.appendChild(paymentLiveRecipientSearch.wrapper);
+            });
+
+            it('should remove wrapper and clear data', () => {
+                // given
+
+                // when
+                paymentLiveRecipientSearch.searchInputKeyDownHandle(eventEnter);
+
+                // then
+                expect(document.querySelector('.' + paymentLiveRecipientSearch.wrapperClassName)).toBeNull();
+                expect(paymentLiveRecipientSearch.currentSelectedIndex).toEqual(-1);
+                expect(paymentLiveRecipientSearch.filteredRecipients).toEqual([]);
+            });
+
+            it('should fill form by selected recipient data', () => {
+                // given
+                const SELECTED_INDEX = 1;
+                paymentLiveRecipientSearch.currentSelectedIndex = SELECTED_INDEX;
+
+                // when
+                paymentLiveRecipientSearch.searchInputKeyDownHandle(eventEnter);
+
+                // then
+                expect(paymentFormServiceMock.fill).toHaveBeenCalledTimes(1);
+                expect(paymentFormServiceMock.fill).toHaveBeenCalledWith(recipients[SELECTED_INDEX])
+            });
+
+            it('should not throw error when filtered recipients array is empty', () => {
+                // given
+                paymentLiveRecipientSearch.currentSelectedIndex = -1;
+                paymentLiveRecipientSearch.filteredRecipients = [];
+
+                // when
+                // then
+                expect(() => paymentLiveRecipientSearch.searchInputKeyDownHandle(eventEnter)).not.toThrow();
+            });
+        });
+
+        /**
+         * @param {number} index
+         * @returns {HTMLLIElement}
+         */
+        function getLiAt(index) {
+            return paymentLiveRecipientSearch.wrapper.querySelectorAll('li')[index];
+        }
     });
 });
