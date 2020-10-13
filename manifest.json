@@ -14,6 +14,7 @@
         "src/shared/query.js",
         "src/shared/store.js",
         "src/shared/wait.js",
+        "src/shared/input.service.js",
         "src/content/actions/collect-data.js",
         "src/content/actions/recipients-list-search.js",
         "src/content/actions/payment-form.service.js",

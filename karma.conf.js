@@ -17,7 +17,11 @@ module.exports = function(config) {
     files: [
       'tests-setup/tests-helpers.js',
       'tests-setup/test-init-script.js',
-      'src/shared/*.js',
+      'src/shared/query.js',
+      'src/shared/wait.js',
+      'src/shared/store.js',
+      'src/shared/input.service.js',
+      'src/shared/*.spec.js',
       'src/content/**/*.js',
     ],
 

@@ -21,7 +21,7 @@ describe('payment-live-recipient-search', () => {
         document.addEventListener.calls.reset();
         window.addEventListener.calls.reset();
         recipients = [];
-        paymentFormServiceMock = jasmine.createSpyObj('paymentFormServiceMock', ['fill']);
+        paymentFormServiceMock = jasmine.createSpyObj('paymentFormServiceMock', { fill: Promise.resolve() });
         storageMock = jasmine.createSpyObj('storageMock', {getRecipients: Promise.resolve(recipients)});
         paymentLiveRecipientSearch = new PaymentLiveRecipientSearch(queryFactory(), storageMock, paymentFormServiceMock);
         document.body.innerHTML = `<textarea name="${SEARCH_FIELD_NAME}">`;
@@ -173,6 +173,32 @@ describe('payment-live-recipient-search', () => {
             // then
             expect(document.body.querySelector('.' + paymentLiveRecipientSearch.wrapperClassName)).toBeNull();
             expect(paymentLiveRecipientSearch.wrapper.querySelectorAll('ul li').length).toEqual(0);
+        });
+
+        it('should not add search list to DOM when selected recipient name is equal search value', () => {
+            // given
+            const RECIPIENT_NAME = 'Grzegorz Brzęczyszczykiewicz'
+            paymentLiveRecipientSearch.selectedRecipient = { recipient: RECIPIENT_NAME };
+            paymentLiveRecipientSearch.searchInputField.value = RECIPIENT_NAME;
+
+            // when
+            paymentLiveRecipientSearch.filter();
+
+            // then
+            expect(document.body.querySelector('.' + paymentLiveRecipientSearch.wrapperClassName)).toBeNull();
+        });
+
+        it('should escape dangers RegEx characters from recipient name', () => {
+            // given
+            const RECIPIENT_NAME = 'reci(p)i[net]?'
+            recipients.push({ recipient: RECIPIENT_NAME });
+            paymentLiveRecipientSearch.searchInputField.value = RECIPIENT_NAME;
+
+            // when
+            paymentLiveRecipientSearch.filter();
+
+            // then
+            expect(paymentLiveRecipientSearch.wrapper.querySelector('ul li').textContent).toEqual(RECIPIENT_NAME);
         });
     });
 
@@ -416,6 +442,18 @@ describe('payment-live-recipient-search', () => {
                 // then
                 expect(() => paymentLiveRecipientSearch.searchInputKeyDownHandle(eventEnter)).not.toThrow();
             });
+
+            it('should bind selected recipient to class property', () => {
+                // given
+                const SELECTED_INDEX = 0;
+                paymentLiveRecipientSearch.currentSelectedIndex = SELECTED_INDEX;
+
+                // when
+                paymentLiveRecipientSearch.searchInputKeyDownHandle(eventEnter);
+
+                // then
+                expect(paymentLiveRecipientSearch.selectedRecipient).toBe(recipients[SELECTED_INDEX])
+            })
         });
 
         /**
