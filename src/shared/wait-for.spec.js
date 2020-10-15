@@ -84,6 +84,21 @@ describe('wait.js', () => {
             });
             jasmine.clock().tick(wait.BASE_TIMEOUT_IN_MS * TRIALS_NO);
         });
+
+        it('should call resolve function when full screen loader will be remove', (done) => {
+            // given
+            const TRIALS_NO = 2;
+            document.body.innerHTML = '<div class="_1ieQW _2HMC-"></div>';
+            setTimeout(clearDOM, wait.BASE_TIMEOUT_IN_MS * TRIALS_NO)
+
+            // when
+            wait.untilLoaderGone().then(() => {
+                // then
+                expect(true).toBe(true);
+                done();
+            });
+            jasmine.clock().tick(wait.BASE_TIMEOUT_IN_MS * TRIALS_NO);
+        });
     });
 
     describe('until', () => {

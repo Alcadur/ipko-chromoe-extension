@@ -1,41 +1,57 @@
 'use strict';
 
+/**
+ * @typedef {Object} PopupMessage
+ * @property {string} actionName
+ * @property {[]} args
+ */
+
 class ContentScript {
-    lastPage = null;
+    /** @type {string|null} */lastPage = null;
     titleSelector = 'h1.TTPMB';
     selectedTabSelector = '._15ytj';
-    pageChangeHandlerBind = this.pageChangeHandler.bind(this);
 
     /**
      * @param {Wait} wait
      * @param {Query} query
      * @param {ContentResolver} contentResolver
+     * @param {CollectData} collectData
+     * @param {MessageService} messageService
      */
-    constructor(wait, query, contentResolver) {
+    constructor(
+        wait,
+        query,
+        contentResolver,
+        collectData,
+        messageService
+    ) {
         this.wait = wait;
         this.query = query;
         this.contentResolver = contentResolver;
 
-        document.addEventListener('click', () => this.pageClickHandler());
-        document.addEventListener('DOMContentLoaded ', this.pageChangeHandlerBind);
+        document.addEventListener('click', () => this.pageClickHandler().then());
+        messageService.addMessageActionListener(MessageActionType.getRecipients, () => { collectData.collect().then(); })
+        messageService.addMessageActionListener(MessageActionType.getLastPage, (responder) => responder(this.lastPage))
     }
 
     async pageClickHandler() {
         const trialLimit = 10;
-
-        document.removeEventListener('click', this.pageChangeHandlerBind);
         try {
-            await wait.for(this.titleSelector, trialLimit);
-            await wait.untilLoaderGone();
-            this.pageChangeHandler();
+            await this.wait.for(this.titleSelector, trialLimit);
         } catch (e) {
+        } finally {
+            await this.wait.untilLoaderGone();
+            this.pageChangeHandler();
         }
-        document.addEventListener('click', this.pageChangeHandlerBind);
     }
 
+    /**
+     * @private
+     */
     pageChangeHandler() {
-        const newTab = (this.query.one(this.selectedTabSelector) || {}).innerText || '';
-        const newPage = ((this.query.one(this.titleSelector) || {}).innerText + newTab) || '' ;
+        const emptyElement = { innerText: '' };
+        const newTab = (this.query.one(this.selectedTabSelector) || emptyElement).innerText || '';
+        const newPage = ((this.query.one(this.titleSelector) || emptyElement).innerText + newTab) || '' ;
 
         if (newPage !== this.lastPage) {
             this.lastPage = newPage;
@@ -47,7 +63,7 @@ class ContentScript {
 /**
  * @returns {ContentScript}
  */
-function contentScriptFactory() { return new ContentScript(waitFactory(), queryFactory(), contentResolverFactory())}
+function contentScriptFactory() { return new ContentScript(waitFactory(), queryFactory(), contentResolverFactory(), collectDataFactory(), messageServiceFactory())}
 
 /**
  * @type {ContentScript}

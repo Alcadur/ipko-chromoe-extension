@@ -17,12 +17,17 @@ module.exports = function(config) {
     files: [
       'tests-setup/tests-helpers.js',
       'tests-setup/test-init-script.js',
+      'src/shared/message-action.type.js',
+      'src/shared/message.service.js',
       'src/shared/query.js',
       'src/shared/wait.js',
       'src/shared/store.js',
       'src/shared/input.service.js',
+
       'src/shared/*.spec.js',
       'src/content/**/*.js',
+
+      { pattern: 'src/popup/message-actions/*.js', type: 'module' },
     ],
 
 

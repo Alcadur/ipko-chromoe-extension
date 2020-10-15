@@ -58,7 +58,7 @@ class Wait {
      * @returns {Promise<void>}
      */
     untilLoaderGone() {
-        const loaderSelector = 'form svg';
+        const loaderSelector = 'form svg, ._1ieQW._2HMC-';
         return new Promise((resolve) => {
             this.until(loaderSelector, resolve);
         });

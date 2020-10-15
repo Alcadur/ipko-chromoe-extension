@@ -34,33 +34,12 @@ describe('content-resolver.js', () => {
         });
     });
 
-    describe('addDataCollectButton', () => {
-        it('should add collect data button on top of table', () => {
-            // given
-            const ICON_URL = 'my-icon.png';
-            chrome.runtime.getURL.returns(ICON_URL);
-
-            // when
-            contentResolver.addDataCollectButton();
-
-            // then
-            const table = document.querySelector('._3082t');
-            const row = table.querySelector('div._3CHZ5.icon-container');
-            const buttonImg = row.querySelector('button img')
-
-            expect(row).toBeTruthy();
-            expect(buttonImg.classList).toContain('icon');
-            expect(buttonImg.getAttribute('src')).toEqual(ICON_URL);
-        });
-    });
-
     describe('pageTitleMap', () => {
         describe('OdbiorcyKrajowi', () => {
             it('should wait until loader will be gone and the table will be shown before any other action', (done) => {
                 // given
                 let untilLoaderGoneResolver = () => {};
                 let forResolver = () => {};
-                spyOn(contentResolver, 'addDataCollectButton');
 
                 waitMock.untilLoaderGone.and.returnValue(new Promise((resolve) => untilLoaderGoneResolver = resolve));
                 waitMock.for.and.returnValue(new Promise((resolve) => forResolver = resolve));
@@ -68,7 +47,6 @@ describe('content-resolver.js', () => {
                 // when
                 contentResolver.pageTitleMap.get('OdbiorcyKrajowi')().then(() => {
                     // then
-                    expect(contentResolver.addDataCollectButton).toHaveBeenCalledTimes(1);
                     expect(recipientsListSearchMock.init).toHaveBeenCalledTimes(1);
                     done();
                 });

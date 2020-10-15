@@ -2,7 +2,7 @@
   "name": "IPKO+",
   "version": "1.0",
   "description": "Opis sam się napisze...",
-  "permissions": ["storage"],
+  "permissions": ["tabs","storage"],
   "web_accessible_resources": [
     "resources/*"
   ],
@@ -11,6 +11,8 @@
       "matches": ["https://www.ipko.pl/*"],
       "css": ["src/content/style.css"],
       "js": [
+        "src/shared/message-action.type.js",
+        "src/shared/message.service.js",
         "src/shared/query.js",
         "src/shared/store.js",
         "src/shared/wait.js",
@@ -20,6 +22,7 @@
         "src/content/actions/payment-form.service.js",
         "src/content/actions/payment-live-recipient-search.js",
         "src/content/content-resolver.js",
+        "src/content/popup-action-resolver.js",
         "src/content/content-script.js"
       ]
     }
