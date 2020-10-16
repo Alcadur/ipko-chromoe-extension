@@ -1,0 +1,30 @@
+
+
+body {
+    width: 170px;
+
+    color: #457B9D;
+}
+
+button {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+
+    background: #F1FAEE;
+    color: #457B9D;
+    border: 1px solid #D8F2CF;
+    border-radius: 3px;
+}
+
+button:not([disabled]) {
+    cursor: pointer;
+}
+
+button[disabled] {
+    opacity: .4;
+}
+
+button:not(:first-child) {
+    margin-top: 5px;
+}

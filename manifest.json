@@ -22,7 +22,6 @@
         "src/content/actions/payment-form.service.js",
         "src/content/actions/payment-live-recipient-search.js",
         "src/content/content-resolver.js",
-        "src/content/popup-action-resolver.js",
         "src/content/content-script.js"
       ]
     }
