@@ -1,6 +1,6 @@
 const AdmZip = require('adm-zip');
 const fs = require('fs');
-const buildOutputPath = './package.zip';
+const buildOutputPath = './ipko+.zip';
 
 if(fs.existsSync(buildOutputPath)) {
     fs.unlinkSync(buildOutputPath)
