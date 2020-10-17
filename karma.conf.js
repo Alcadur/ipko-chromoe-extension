@@ -28,6 +28,7 @@ module.exports = function(config) {
       'src/content/**/*.js',
 
       { pattern: 'src/popup/message-actions/*.js', type: 'module' },
+      { pattern: 'src/options/view-manager*.js', type: 'module' },
     ],
 
 

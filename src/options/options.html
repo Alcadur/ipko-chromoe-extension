@@ -9,33 +9,10 @@
     <script src="../shared/store.js"></script>
 </head>
 <body lang="pl">
-    <div class="content">
-        <button type="button" id="saveButton">Zapisz zmiany</button>
-        <table>
-            <thead>
-                <tr>
-                    <th>Konto źródłowe</th>
-                    <th>Odbiorca</th>
-                    <th>Konto odbiorcy</th>
-                    <th>Tytuł</th>
-                    <th>Kwota</th>
-                </tr>
-            </thead>
-            <tbody>
+    <div id="viewContainer" class="content"></div>
 
-            </tbody>
-        </table>
-
-        <template id="rowTemplate">
-            <tr>
-                <td class="source-account"><input type="text"></td>
-                <td class="recipient-name"><input type="text"></td>
-                <td class="recipient-account"><input type="text"></td>
-                <td class="title"><input type="text"></td>
-                <td class="amount"><input type="text"></td>
-            </tr>
-        </template>
-    </div>
     <script type="module" src="index.js"></script>
+
+    <div id="scripts"></div>
 </body>
 </html>

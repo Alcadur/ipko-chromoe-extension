@@ -8,7 +8,7 @@ messageService.sendMessageToTab({ actionName: MessageActionType.getLastPage }, (
     changePageAction(lastPageTitle, document.body)
 );
 
-query.one('#settings').addEventListener('click', () => {
+query.one('#recipients').addEventListener('click', () => {
     chrome.runtime.openOptionsPage();
 });
 
