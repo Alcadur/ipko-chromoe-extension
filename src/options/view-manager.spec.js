@@ -1,6 +1,7 @@
 import { ViewManager } from './view-manager.js';
 
 describe('ViewManager', () => {
+    const DATA_TIMESTAMP = 159875325685;
     const TEMPLATE1 = 'template1';
     const TEMPLATE2 = 'template2';
 
@@ -18,6 +19,7 @@ describe('ViewManager', () => {
     }
 
     beforeEach(() => {
+        spyOn(Date, 'now').and.returnValue(DATA_TIMESTAMP);
         document.body.innerHTML = '<div id="viewContainer"></div><div id="scripts"></div>'
         fetchMock = jasmine.createSpy('fetch');
         fetchMock.and.callFake((url) => Promise.resolve(templatesUrl[url]));
@@ -43,7 +45,7 @@ describe('ViewManager', () => {
 
             // then
             expect(document.querySelector('article').innerHTML).toEqual(templates[TEMPLATE2]);
-            expect(scriptContainer.innerHTML).toEqual(`<script type="module" src="views/${TEMPLATE2}/scripts.js"></script>`);
+            expect(scriptContainer.innerHTML).toEqual(`<script type="module" src="views/${TEMPLATE2}/scripts.js?${DATA_TIMESTAMP}"></script>`);
         });
 
         it('should add script when first line of template will have correct comment', async () => {
@@ -56,7 +58,7 @@ describe('ViewManager', () => {
 
             // then
             expect(scriptContainer.appendChild).toHaveBeenCalled();
-            expect(scriptContainer.innerHTML).toEqual(`<script type="module" src="views/${TEMPLATE2}/scripts.js"></script>`)
+            expect(scriptContainer.innerHTML).toEqual(`<script type="module" src="views/${TEMPLATE2}/scripts.js?${DATA_TIMESTAMP}"></script>`)
         });
 
         it('should add scripts to custom container', async () => {
@@ -70,7 +72,7 @@ describe('ViewManager', () => {
 
             // then
             expect(scriptContainer.appendChild).toHaveBeenCalled();
-            expect(scriptContainer.innerHTML).toEqual(`<script type="module" src="views/${TEMPLATE2}/scripts.js"></script>`)
+            expect(scriptContainer.innerHTML).toEqual(`<script type="module" src="views/${TEMPLATE2}/scripts.js?${DATA_TIMESTAMP}"></script>`)
         });
 
         it('should not add script when first line of template will not script comment', async () => {

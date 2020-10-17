@@ -55,7 +55,7 @@ export class ViewManager {
      * @param {string} scriptContainerSelector
      */
     fetchScripts(viewName, scriptContainerSelector) {
-        const scriptPath = `${this.VIEW_DIR}/${viewName}/scripts.js`;
+        const scriptPath = `${this.VIEW_DIR}/${viewName}/scripts.js?${Date.now()}`;
         const script = document.createElement('script');
         script.type = 'module';
         script.src = scriptPath;
