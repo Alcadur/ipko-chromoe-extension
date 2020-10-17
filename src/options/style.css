@@ -1,3 +1,20 @@
+button {
+    background: #F1FAEE;
+    color: #457B9D;
+    border: 1px solid #D8F2CF;
+    border-radius: 3px;
+}
+
+button:hover {
+    background: #D8F1D0;
+    color: #386480;
+    border-color: #BEE8B0;
+}
+
+button:not([disabled]) {
+    cursor: pointer;
+}
+
 input {
     width: 100%;
 }
