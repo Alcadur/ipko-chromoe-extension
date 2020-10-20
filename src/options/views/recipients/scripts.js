@@ -20,35 +20,37 @@ storage.getRecipients().then((recipients) => {
  * @param {Recipient} recipient
  */
 function addRow(recipient) {
-    const template = query.one('#rowTemplate').cloneNode(true).content;
+    const row = query.one('#rowTemplate').content.firstElementChild.cloneNode(true);
 
-    template.querySelector('.source-account input').value = recipient.fromNumber;
-    template.querySelector('.recipient-name input').value = recipient.recipient;
-    template.querySelector('.recipient-account input').value = recipient.recipientNumber;
-    template.querySelector('.title input').value = recipient.title;
-    template.querySelector('.amount input').value = recipient.defaultAmount || 0;
+    row.querySelector('.source-account div').textContent = recipient.fromNumber;
+    row.querySelector('.recipient-name div').textContent = recipient.recipient;
+    row.querySelector('.recipient-account div').textContent = recipient.recipientNumber;
+    row.querySelector('.title div').textContent = recipient.title;
+    row.querySelector('.amount div').textContent = recipient.defaultAmount || 0;
 
-    tableBody.appendChild(template);
+    row.addEventListener('click',() => location.hash = `recipients/edit/${recipient.recipient}`)
+
+    tableBody.appendChild(row);
 }
 
-function collectData() {
-    /**
-     * @type {Recipient[]}
-     */
-    const data = []
-    query.all('tbody tr').forEach(row => {
-        data.push({
-            fromNumber: query.one('.source-account input', row).value,
-            recipient: query.one('.recipient-name input', row).value,
-            recipientNumber: query.one('.recipient-account input', row).value,
-            title: query.one('.title input', row).value,
-            defaultAmount: query.one('.amount input', row).value
-        });
-    });
-
-    return data;
-}
-
-query.one('#saveButton').addEventListener('click', () => {
-    storage.saveRecipients(collectData()).then(() => {})
-})
+// function collectData() {
+//     /**
+//      * @type {Recipient[]}
+//      */
+//     const data = []
+//     query.all('tbody tr').forEach(row => {
+//         data.push({
+//             fromNumber: query.one('.source-account input', row).value,
+//             recipient: query.one('.recipient-name input', row).value,
+//             recipientNumber: query.one('.recipient-account input', row).value,
+//             title: query.one('.title input', row).value,
+//             defaultAmount: query.one('.amount input', row).value
+//         });
+//     });
+//
+//     return data;
+// }
+//
+// query.one('#saveButton').addEventListener('click', () => {
+//     storage.saveRecipients(collectData()).then(() => {})
+// })

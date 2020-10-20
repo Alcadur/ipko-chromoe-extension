@@ -5,18 +5,29 @@
  * @param {RequestInit} [init]
  */
 
+/**
+ * @typedef DynamicUrl
+ * @property {RegExp} urlPattern
+ * @property {String} url
+ * @property {[{name: String, index: Number}]} variables
+ */
+
 export class ViewManager {
     /** @private */VIEW_DIR = 'views'
     /** @private */USE_SCRIPTS_COMMEND = '<!--include scripts-->';
+    /** @private
+     * @type DynamicUrl[]*/dynamicUrls = []
 
     /**
      * @param {Fetch} fetch
      * @param {Query} query
      */
     constructor(fetch, query) {
-        /** @private @type Fetch*/
+        /** @private
+         * @type Fetch*/
         this.fetch = fetch;
-        /** @private @type Query */
+        /** @private
+         * @type Query */
         this.query = query;
     }
 
@@ -30,13 +41,34 @@ export class ViewManager {
     load(viewName, { htmlContainerSelector = '#viewContainer', scriptsContainerSelector = '#scripts' } = {
         htmlContainerSelector: '#viewContainer', scriptsContainerSelector: '#scripts'
     }) {
-        return this.fetchTemplate(viewName).then((htmlString) => {
+        const templatePath = this.getTemplatePath(viewName);
+        return this.fetchTemplate(templatePath).then((htmlString) => {
             this.query.one(htmlContainerSelector).innerHTML = htmlString;
 
             if (htmlString.split('\n')[0] === this.USE_SCRIPTS_COMMEND) {
-                this.fetchScripts(viewName, scriptsContainerSelector);
+                this.fetchScripts(templatePath, scriptsContainerSelector);
             }
         });
+    }
+
+    /**
+     * @private
+     * @param {String} viewName
+     * @return {String}
+     */
+    getTemplatePath(viewName) {
+        const dynamicUrl = this.findDynamicUrl(viewName);
+
+        return !!dynamicUrl ? dynamicUrl.url : viewName;
+    }
+
+    /**
+     * @private
+     * @param {String} viewName
+     * @return {DynamicUrl|null}
+     */
+    findDynamicUrl(viewName) {
+        return this.dynamicUrls.find(dynamicUrl => dynamicUrl.urlPattern.test(viewName));
     }
 
     /**
@@ -45,7 +77,8 @@ export class ViewManager {
      * @return {Promise<string>}
      */
     fetchTemplate(viewName) {
-        return this.fetch(`${this.VIEW_DIR}/${viewName}/template.html`)
+        const templatePath = `${this.VIEW_DIR}/${viewName}/template.html`.replace(/\/\//g, '/');
+        return this.fetch(templatePath)
             .then(response => response.text());
     }
 
@@ -63,6 +96,45 @@ export class ViewManager {
         const container = this.query.one(scriptContainerSelector);
         container.innerHTML = '';
         container.appendChild(script);
+    }
+
+    /**
+     * @param {String} urlPattern
+     */
+    addDynamicUrlPattern(urlPattern) {
+        const urlPartsWithVariables = urlPattern.split('/');
+        const urlParts = [];
+        const variablesPosition = [];
+        let regexString = '';
+        urlPartsWithVariables.forEach((urlPart, index) => {
+            if (urlPart.substr(0, 1) === '$') {
+                variablesPosition.push({ name: urlPart.substr(1), index });
+                regexString += '.+\/';
+            } else {
+                urlParts.push(urlPart);
+                regexString += urlPart + '\/';
+            }
+        });
+        regexString += '?';
+
+        this.dynamicUrls.push({
+            urlPattern: new RegExp(regexString),
+            url: urlParts.join('/'),
+            variables: variablesPosition
+        });
+    }
+
+    /**
+     * @return {Object}
+     */
+    getPathVariables() {
+        const path = location.hash.substr(1);
+        const pathParts = path.split('/')
+        const matchDynamicUrl = this.findDynamicUrl(path);
+        const variables = {};
+        matchDynamicUrl.variables.forEach(variableInfo => variables[variableInfo.name] = decodeURI(pathParts[variableInfo.index]));
+
+        return variables;
     }
 }
 

@@ -19,17 +19,8 @@ input {
     width: 100%;
 }
 
-.source-account,
-.recipient-account {
-    width: 222px;
-}
-
-.amount {
-    width: 65px;
-}
-
 .content {
-    width: 61%;
+    width: 65%;
     min-width: 864px;
     margin: 0 auto;
 }

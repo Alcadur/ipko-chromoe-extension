@@ -7,6 +7,9 @@ describe('ViewManager', () => {
 
     let fetchMock;
     /** @type ViewManager */let viewManager;
+    let defaultViewContainer;
+    let defaultScriptsContainer;
+
 
     const templates = {
         [TEMPLATE1]: '<div>template1</div>',
@@ -20,7 +23,9 @@ describe('ViewManager', () => {
 
     beforeEach(() => {
         spyOn(Date, 'now').and.returnValue(DATA_TIMESTAMP);
-        document.body.innerHTML = '<div id="viewContainer"></div><div id="scripts"></div>'
+        document.body.innerHTML = '<div id="viewContainer"></div><div id="scripts"></div>';
+        defaultViewContainer = document.querySelector('#viewContainer');
+        defaultScriptsContainer = document.querySelector('#scripts');
         fetchMock = jasmine.createSpy('fetch');
         fetchMock.and.callFake((url) => Promise.resolve(templatesUrl[url]));
         viewManager = new ViewManager(fetchMock, queryFactory());
@@ -85,6 +90,72 @@ describe('ViewManager', () => {
 
             // then
             expect(scriptContainer.appendChild).not.toHaveBeenCalled();
+        });
+
+        it('should load template path without path variables', async () => {
+            // given
+            const pathWithVariables = 'my/path/$var1/with/$var2/variables/$var3';
+            const templatePath = 'views/my/path/with/variables/template.html';
+            const TEMPLATE_CONTENT = 'variables content';
+            templatesUrl[templatePath] = { text: () => TEMPLATE_CONTENT };
+            const url = pathWithVariables.replace('$var1', '1')
+                .replace('$var2', '2')
+                .replace('$var3', '3')
+            viewManager.addDynamicUrlPattern(pathWithVariables);
+
+            // when
+            await viewManager.load(url);
+
+            // then
+            expect(document.querySelector('#viewContainer').innerHTML).toEqual(TEMPLATE_CONTENT)
+        });
+    });
+
+    describe('addDynamicUrlPattern', () => {
+        const testData = [
+            'my/view/$var1',
+            'my/view/$var1/$var2',
+            '$var0/my/view',
+            'my/view/$var1/nested/$var2',
+            'my/view/$var1/nested/',
+        ];
+        testData.forEach(testPattern =>
+            it(`should parse view name with variables to template path (pattern: ${testPattern})`, async () => {
+                // given
+                const viewNamePattern = testPattern;
+                const viewName = viewNamePattern.replace(/\$(var\d)/g, '$1');
+                const templatePathPart = viewNamePattern.replace(/\/?\$var\d/g, '');
+                const templatePath = `views/${templatePathPart}/template.html`.replace(/\/\//g, '/');
+
+                templatesUrl[templatePath] = { text: () => templatePath };
+
+                // when
+                viewManager.addDynamicUrlPattern(viewNamePattern);
+
+                // then
+                await viewManager.load(viewName);
+                expect(defaultViewContainer.textContent).toEqual(templatePath);
+            })
+        );
+    });
+
+    describe('getPathVariables', () => {
+        it('should get variable from location hash based on dynamic url pattern', () => {
+            // given
+            const CUSTOMER_NAME = 'Jurek Ogórek';
+            const ACCOUNT_NUMBER = '00 0000 0000 0000';
+            const urlPattern = 'customers/$customerName/details/$accountNumber';
+            const url = urlPattern.replace('$customerName', CUSTOMER_NAME)
+                .replace('$accountNumber', ACCOUNT_NUMBER)
+            viewManager.addDynamicUrlPattern(urlPattern);
+            location.hash = url;
+
+            // when
+            const result = viewManager.getPathVariables();
+
+            // then
+            expect(result.customerName).toEqual(CUSTOMER_NAME);
+            expect(result.accountNumber).toEqual(ACCOUNT_NUMBER);
         });
     });
 });

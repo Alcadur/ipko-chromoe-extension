@@ -1,0 +1,43 @@
+table {
+    border-collapse: collapse
+}
+
+th {
+    font-size: 18px;
+    color: #fa4251
+}
+
+tbody {
+    font-size: 14px;
+}
+
+tbody tr {
+    padding: 5px;
+    border-bottom: 1px solid #f2f2f2;
+
+    cursor: pointer;
+}
+
+tbody td div {
+    display: flex;
+    min-height: 38px;
+    overflow-wrap: anywhere;
+    padding: 5px;
+
+    align-items: center;
+}
+
+tbody td.source-account div,
+tbody td.recipient-account div {
+    font-size: 13px;
+    width: 222px;
+}
+
+.amount div {
+    width: 65px;
+}
+
+.recipient-name div,
+.title div {
+    width: 205px;
+}
