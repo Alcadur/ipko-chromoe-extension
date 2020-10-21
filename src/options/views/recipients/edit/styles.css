@@ -1,0 +1,36 @@
+.topPanel {
+    display: flex;
+    align-items: center;
+}
+
+a.back-button {
+    display: inline-block;
+    height: 70px;
+    width: 70px;
+    margin-right: 35px;
+    background: url('/resources/back.png') no-repeat;
+    background-size: contain;
+}
+
+.row {
+    display: flex;
+    margin-bottom: 5px;
+
+    font-size: 20px;
+}
+
+label {
+    width: 120px;
+}
+
+#editForm {
+    margin-bottom: 23px;
+}
+
+.bottomPanel {
+    padding-left: 105px;
+}
+
+.bottomPanel button {
+    font-size: 20px;
+}

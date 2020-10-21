@@ -2,7 +2,7 @@ import { viewManagerProvider } from './view-manager.js';
 
 const viewManager = viewManagerProvider();
 
-viewManager.addDynamicUrlPattern('recipients/edit/$recipientName');
+viewManager.addDynamicUrlPattern('recipients/$recipientName/edit');
 
 viewManager.load(location.hash.substring(1) || 'recipients');
 

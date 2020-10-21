@@ -125,7 +125,7 @@ export class ViewManager {
     }
 
     /**
-     * @return {Object}
+     * @return {*}
      */
     getPathVariables() {
         const path = location.hash.substr(1);

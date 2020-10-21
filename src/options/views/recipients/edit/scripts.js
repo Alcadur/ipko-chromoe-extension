@@ -1,4 +1,5 @@
-import { viewManagerProvider } from '../../../view-manager.js';
+'use strict';
 
-const viewManager = viewManagerProvider();
-console.log('path variables', viewManager.getPathVariables());
+import { recipientEditControllerFactory } from './recipient-edit-controller.js';
+
+recipientEditControllerFactory();

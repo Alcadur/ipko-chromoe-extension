@@ -28,7 +28,7 @@ function addRow(recipient) {
     row.querySelector('.title div').textContent = recipient.title;
     row.querySelector('.amount div').textContent = recipient.defaultAmount || 0;
 
-    row.addEventListener('click',() => location.hash = `recipients/edit/${recipient.recipient}`)
+    row.addEventListener('click',() => location.hash = `recipients/${recipient.recipient}/edit`)
 
     tableBody.appendChild(row);
 }
