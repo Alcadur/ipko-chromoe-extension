@@ -1,4 +1,7 @@
+'use strict';
 // TODO: write tests (and/or refactor)
+
+import { ADD_RECIPIENT, EDIT_RECIPIENT } from '../../options-urls.js';
 
 const tableBody = query.one('tbody');
 
@@ -28,29 +31,9 @@ function addRow(recipient) {
     row.querySelector('.title div').textContent = recipient.title;
     row.querySelector('.amount div').textContent = recipient.defaultAmount || 0;
 
-    row.addEventListener('click',() => location.hash = `recipients/${recipient.recipient}/edit`)
+    row.addEventListener('click',() => location.hash = EDIT_RECIPIENT(recipient.recipient))
 
     tableBody.appendChild(row);
 }
 
-// function collectData() {
-//     /**
-//      * @type {Recipient[]}
-//      */
-//     const data = []
-//     query.all('tbody tr').forEach(row => {
-//         data.push({
-//             fromNumber: query.one('.source-account input', row).value,
-//             recipient: query.one('.recipient-name input', row).value,
-//             recipientNumber: query.one('.recipient-account input', row).value,
-//             title: query.one('.title input', row).value,
-//             defaultAmount: query.one('.amount input', row).value
-//         });
-//     });
-//
-//     return data;
-// }
-//
-// query.one('#saveButton').addEventListener('click', () => {
-//     storage.saveRecipients(collectData()).then(() => {})
-// })
+query.one('#addRecipient').addEventListener('click', () => location.hash = ADD_RECIPIENT())

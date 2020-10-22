@@ -1,22 +1,18 @@
 'use strict';
 
-import { RecipientEditController } from './recipient-edit-controller.js';
+import { RecipientEditController } from './recipient-edit.controller.js';
 
 describe('RecipientEditController', () => {
-    const fields = [
-        { id: 'fromNumber', label: 'Z konta' },
-        { id: 'recipient', label: 'Odbiorca' },
-        { id: 'recipientNumber', label: 'Na konto' },
-        { id: 'title', label: 'Tytułem' },
-        { id: 'defaultAmount', label: 'Kwota' },
-    ];
     let viewManagerMock;
     let storeMock;
     let mockRecipient;
     let mockRecipients;
+    let recipientFormMock;
+    let dialogServiceMock
 
     beforeEach(() => {
-        document.body.innerHTML = `<div id="editForm"></div>
+        document.body.innerHTML = `<button class="back-button"></button>
+        <div id="editForm"></div>
         <button id="saveButton"></button>
         <template id="formRowTemplate">
             <div class="row">
@@ -39,36 +35,34 @@ describe('RecipientEditController', () => {
             getRecipients: Promise.resolve(mockRecipients),
             saveRecipients: Promise.resolve()
         });
+        recipientFormMock = jasmine.createSpyObj('recipientForm', ['appendFormTo', 'update', 'getRecipient', 'isValid']);
+        recipientFormMock.isValid.and.returnValue(true);
+        dialogServiceMock = jasmine.createSpyObj('messageService', ['open']);
     });
 
     describe('constructor', () => {
+        it(`should append form to container`, () => {
+            // when
+            testRecipientEditControllerFactory();
 
-        fields.forEach((field) => {
-            it(`should create form row for field ${field.id}`, () => {
-                // when
-                testRecipientEditControllerFactory();
+            // then
+            expect(recipientFormMock.appendFormTo).toHaveBeenCalledWith('#editForm');
+        });
 
-                // then
-                expect(document.getElementById(field.id)).not.toBeNull();
-                expect(document.querySelector(`[for=${field.id}]`)).not.toBeNull();
-            });
+        it('should fill form', (done) => {
+            // when
+            testRecipientEditControllerFactory();
 
-            it(`should fill ${field.id} field when recipient will be fetched from store`, (done) => {
-                // when
-                testRecipientEditControllerFactory();
-
-
-                // then
-                setTimeout(() => {
-                    expect(document.getElementById(field.id).value).toEqual(mockRecipient[field.id]);
-                    done();
-                });
+            // then
+            setTimeout(() => {
+                expect(recipientFormMock.update).toHaveBeenCalledWith(mockRecipient);
+                done();
             });
         });
 
         it('should bind action to save button', async () => {
             // given
-            let clickEvent;
+            let clickEvent = () => {};
             const saveButton = document.getElementById('saveButton');
             spyOn(saveButton, 'addEventListener').and.callFake((event, callback) => clickEvent = callback);
 
@@ -100,12 +94,9 @@ describe('RecipientEditController', () => {
                 title: 'food',
                 defaultAmount: '52'
             };
+            recipientFormMock.getRecipient.and.callFake((ref) => Object.assign(ref, newValue));
 
             setTimeout(async () => {
-                fields.forEach(field => {
-                    document.querySelector('#' + field.id).value = newValue[field.id];
-                });
-
                 // when
                 await controller.saveAction();
 
@@ -125,10 +116,22 @@ describe('RecipientEditController', () => {
 
             // then
             expect(location.hash).toEqual('#recipients')
-        })
+        });
+
+        it('should show modal information when form will be invalid', async () => {
+            // given
+            recipientFormMock.isValid.and.returnValue(false);
+
+            // when
+            await controller.saveAction();
+
+            // then
+            expect(dialogServiceMock.open).toHaveBeenCalledWith('Nazwa odbiorcy jest wymagana');
+            expect(storeMock.saveRecipients).not.toHaveBeenCalled();
+        });
     });
 
     function testRecipientEditControllerFactory() {
-        return new RecipientEditController(viewManagerMock, queryFactory(), storeMock);
+        return new RecipientEditController(viewManagerMock, queryFactory(), storeMock, recipientFormMock, dialogServiceMock);
     }
 });

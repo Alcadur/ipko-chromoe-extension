@@ -3,20 +3,29 @@ h1 {
     font-size: 38px;
 }
 
-button {
+a.button {
+    text-decoration: none;
+    padding: 2px 5px;
+}
+
+button,
+a.button {
     background: #F1FAEE;
     color: #457B9D;
     border: 1px solid #D8F2CF;
     border-radius: 3px;
+    font-size: 20px;
 }
 
-button:hover {
+button:hover,
+a.button:hover {
     background: #D8F1D0;
     color: #386480;
     border-color: #BEE8B0;
 }
 
-button:not([disabled]) {
+button:not([disabled]),
+a:not([disabled]) {
     cursor: pointer;
 }
 

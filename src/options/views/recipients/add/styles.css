@@ -11,9 +11,3 @@ a.back-button {
     background: url('/resources/back.png') no-repeat;
     background-size: contain;
 }
-
-#editForm {
-    margin-bottom: 23px;
-}
-
-

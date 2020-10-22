@@ -27,12 +27,12 @@ bank credential or any other sensitive data.
  - [ ] wiki page (in polish)
  - [ ] possibility to have multiple transaction titles and amount for one recipient
  - [ ] full extension options page
- - [ ] manual add recipient from extension options
  - [ ] save user account list from users products
  - [ ] manual add account data
  - [ ] edit account data
  - [ ] format account number by a pattern: `\d{2} (?:\d{4}\s?){6,}`
 
+ - [x] manual add recipient from extension options
  - [x] edit recipient from extension options
  - [x] live search on recipient list
  - [x] save recipients data from list
@@ -43,3 +43,4 @@ bank credential or any other sensitive data.
 
 ### Things to do after release
  - [ ] Integrate extension with leasing portal
+ - [ ] Improve popup message layout

@@ -28,8 +28,11 @@ module.exports = function(config) {
       'src/content/**/*.js',
 
       { pattern: 'src/popup/message-actions/*.js', type: 'module' },
+      { pattern: 'src/options/options-url*.js', type: 'module' },
       { pattern: 'src/options/view-manager*.js', type: 'module' },
-      { pattern: 'src/options/views/recipients/edit/*-controller*.js', type: 'module' },
+      { pattern: 'src/options/views/recipients/shared/**/*.js', type: 'module' },
+      { pattern: 'src/options/views/recipients/edit/*.controller*.js', type: 'module' },
+      { pattern: 'src/options/views/recipients/add/*.controller*.js', type: 'module' },
     ],
 
 
