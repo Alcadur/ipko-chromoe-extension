@@ -106,7 +106,7 @@ export class RecipientForm {
      */
     update(recipient) {
         this.fields.forEach(field => {
-            this.fieldsInputs[field.id].value = recipient[field.id];
+            this.fieldsInputs[field.id].value = recipient[field.id] || '';
         });
     }
 

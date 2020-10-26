@@ -44,3 +44,4 @@ bank credential or any other sensitive data.
 ### Things to do after release
  - [ ] Integrate extension with leasing portal
  - [ ] Improve popup message layout
+ - [ ] add search in options recipients list

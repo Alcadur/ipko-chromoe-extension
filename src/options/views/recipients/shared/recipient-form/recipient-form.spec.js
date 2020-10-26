@@ -176,6 +176,21 @@ describe('RecipientForm', () => {
                 expect(document.getElementById(fieldId).value).toEqual(newValue[fieldId])
             );
         });
+
+        it('should display empty string when value will be undefined or null', () => {
+            // given
+            const newValue =  {
+                title: undefined,
+                recipientNumber: null
+            };
+
+            // when
+            form.update(newValue);
+
+            // then
+            expect(document.getElementById('title').value).toEqual('');
+            expect(document.getElementById('recipientNumber').value).toEqual('');
+        })
     });
 
     describe('getRecipient', () => {
