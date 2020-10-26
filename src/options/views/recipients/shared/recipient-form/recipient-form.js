@@ -4,15 +4,24 @@
  * @typedef RecipientField
  * @property {String} id
  * @property {String} label
+ * @property {Object} [actions]
  */
 
 export class RecipientForm {
     /** @private
      * @type RecipientField[]*/
     fields = [
-        { id: 'fromNumber', label: 'Z konta' },
+        {
+            id: 'fromNumber', label: 'Z konta', actions: {
+                input: this.formatAccountNumber
+            },
+        },
         { id: 'recipient', label: 'Odbiorca*' },
-        { id: 'recipientNumber', label: 'Na konto' },
+        {
+            id: 'recipientNumber', label: 'Na konto', actions: {
+                input: this.formatAccountNumber
+            }
+        },
         { id: 'title', label: 'Tytułem' },
         { id: 'defaultAmount', label: 'Kwota' },
     ];
@@ -20,7 +29,7 @@ export class RecipientForm {
      * @private
      * @type {Object}
      */
-    fieldsInputs = { };
+    fieldsInputs = {};
     /**
      * @private
      * @type Node
@@ -54,6 +63,12 @@ export class RecipientForm {
             const inputElement = this.query.one('input', row);
             inputElement.id = field.id;
             this.fieldsInputs[field.id] = inputElement;
+
+            if (field.actions) {
+                Object.keys(field.actions).forEach(eventName => {
+                    inputElement.addEventListener(eventName, field.actions[eventName]);
+                });
+            }
 
             this.form.appendChild(row);
         });
@@ -112,6 +127,41 @@ export class RecipientForm {
     isValid() {
         return !!this.fieldsInputs.recipient.value.trim();
     }
+
+    /**
+     * @private
+     * @this HTMLInputElement
+     * @param {InputEvent} event
+     */
+    formatAccountNumber(event) {
+        const position = this.selectionStart;
+        let newPosition = this.selectionStart;
+        const lengthBeforeFormat = this.value.length;
+
+        this.value = this.value
+            .replace(/\s/g, '')
+            .replace(/^([A-Za-z]{0,2}\d{2})\s*|(\d{4})\s*/g, '$1$2 ')
+            .trim();
+
+        if (position !== lengthBeforeFormat) {
+            const prefixLength = this.value.indexOf(' ');
+            const whitespacesMatches = this.value.substr(0, position).match(/\s/g);
+            const numberOfWhitespaces = whitespacesMatches ? whitespacesMatches.length : 0;
+            const accountLengthWithoutPrefix = position - prefixLength - numberOfWhitespaces;
+            let incrementBy = 1;
+            if (event.inputType === 'deleteContentBackward') {
+                incrementBy = -1;
+            }
+
+            if (position === prefixLength || accountLengthWithoutPrefix % 4 === 0) {
+                newPosition += incrementBy;
+            }
+
+            this.setSelectionRange(newPosition, newPosition)
+        }
+    }
 }
 
-export function recipientFormFactory() { return new RecipientForm(queryFactory()); }
+export function recipientFormFactory() {
+    return new RecipientForm(queryFactory());
+}
