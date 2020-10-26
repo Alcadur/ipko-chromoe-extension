@@ -30,8 +30,8 @@ bank credential or any other sensitive data.
  - [ ] save user account list from users products
  - [ ] manual add account data
  - [ ] edit account data
- - [ ] format account number by a pattern: `\d{2} (?:\d{4}\s?){6,}`
-
+ 
+ - [x] format account number by a pattern: `\d{2} (?:\d{4}\s?){6,}`
  - [x] manual add recipient from extension options
  - [x] edit recipient from extension options
  - [x] live search on recipient list
