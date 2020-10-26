@@ -72,7 +72,6 @@ export class ViewManager {
     }
 
     /**
-     * @private
      * @param {string} viewName
      * @return {Promise<string>}
      */

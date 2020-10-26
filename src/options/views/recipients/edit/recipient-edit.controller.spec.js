@@ -36,6 +36,7 @@ describe('RecipientEditController', () => {
             saveRecipients: Promise.resolve()
         });
         recipientFormMock = jasmine.createSpyObj('recipientForm', ['appendFormTo', 'update', 'getRecipient', 'isValid']);
+        recipientFormMock.update.and.returnValue(Promise.resolve());
         recipientFormMock.isValid.and.returnValue(true);
         dialogServiceMock = jasmine.createSpyObj('messageService', ['open']);
     });

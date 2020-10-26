@@ -1,5 +1,7 @@
 'use strict';
 
+import { viewManagerProvider } from '../../../../view-manager.js';
+
 /**
  * @typedef RecipientField
  * @property {String} id
@@ -12,18 +14,18 @@ export class RecipientForm {
      * @type RecipientField[]*/
     fields = [
         {
-            id: 'fromNumber', label: 'Z konta', actions: {
+            id: 'fromNumber', actions: {
                 input: this.formatAccountNumber
             },
         },
-        { id: 'recipient', label: 'Odbiorca*' },
+        { id: 'recipient' },
         {
-            id: 'recipientNumber', label: 'Na konto', actions: {
+            id: 'recipientNumber', actions: {
                 input: this.formatAccountNumber
             }
         },
-        { id: 'title', label: 'Tytułem' },
-        { id: 'defaultAmount', label: 'Kwota' },
+        { id: 'title' },
+        { id: 'defaultAmount' },
     ];
     /**
      * @private
@@ -32,36 +34,39 @@ export class RecipientForm {
     fieldsInputs = {};
     /**
      * @private
-     * @type Node
+     * @type Element
      */
     form;
+    /**
+     * @type function
+     */
+    updateWaitingForFormPromiseResolver;
 
     /**
      * @param {Query} query
+     * @param {ViewManager} viewManager
      */
-    constructor(query) {
+    constructor(query, viewManager) {
         this.query = query;
+        this.viewManager = viewManager;
 
-        this.createForm();
+        this.createForm().then(() => {
+            if (this.updateWaitingForFormPromiseResolver) {
+                this.updateWaitingForFormPromiseResolver()
+            }
+        });
     }
 
     /**
      * @private
+     * @return {Promise<void>}
      */
-    createForm() {
+    async createForm() {
         this.form = document.createElement('div');
-        const rowTemplate = document.createElement('div');
-        rowTemplate.classList.add('row');
-        rowTemplate.innerHTML = '<label for=""></label><input id="" type="text">';
+        this.form.innerHTML = await this.viewManager.fetchTemplate('recipients/shared/recipient-form');
 
         this.fields.forEach(field => {
-            const row = rowTemplate.cloneNode(true);
-            const labelElement = this.query.one('label', row);
-            labelElement.textContent = field.label;
-            labelElement.setAttribute('for', field.id);
-
-            const inputElement = this.query.one('input', row);
-            inputElement.id = field.id;
+            const inputElement = this.query.one(`input#${field.id}`, this.form);
             this.fieldsInputs[field.id] = inputElement;
 
             if (field.actions) {
@@ -69,8 +74,6 @@ export class RecipientForm {
                     inputElement.addEventListener(eventName, field.actions[eventName]);
                 });
             }
-
-            this.form.appendChild(row);
         });
     }
 
@@ -105,8 +108,16 @@ export class RecipientForm {
      * @param {Recipient} recipient
      */
     update(recipient) {
-        this.fields.forEach(field => {
-            this.fieldsInputs[field.id].value = recipient[field.id] || '';
+        return new Promise((resolve) => {
+            if (Object.keys(this.fieldsInputs).length) {
+                return resolve();
+            }
+
+            this.updateWaitingForFormPromiseResolver = resolve;
+        }).then(() => {
+            this.fields.forEach(field => {
+                this.fieldsInputs[field.id].value = recipient[field.id] || '';
+            })
         });
     }
 
@@ -163,5 +174,5 @@ export class RecipientForm {
 }
 
 export function recipientFormFactory() {
-    return new RecipientForm(queryFactory());
+    return new RecipientForm(queryFactory(), viewManagerProvider());
 }
