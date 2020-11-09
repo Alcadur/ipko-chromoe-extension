@@ -1,18 +1,17 @@
+/**
+ * @typedef {(Recipient & { paymentIndex, paymentTitle })} FilteredRecipient
+ */
+
 class PaymentLiveRecipientSearch {
     currentSelectedIndex = -1;
     searchInputSelector = 'textarea[name$="data.recipient.name"]';
-    searchInputField;
-    /**
-     * @type {Recipient[]}
-     */
-    recipients = [];
-    /**
-     * @type {Recipient}
-     */
-    selectedRecipient;
-    filteredRecipients = [];
-    rowTemplate;
-    wrapper = document.createElement('div');
+    /** @type {Element} */searchInputField;
+    /** @type {Recipient[]} */recipients = [];
+    /** @type {Recipient} */selectedRecipient;
+    /** @type {FilteredRecipient[]} */filteredRecipients = [];
+
+    /** @type {HTMLElement} */rowTemplate;
+    /** @type {HTMLElement} */wrapper = document.createElement('div');
     wrapperClassName = 'recipient-search-list';
 
     /**
@@ -62,7 +61,10 @@ class PaymentLiveRecipientSearch {
         this.currentSelectedIndex = -1;
         this.removeSearchList();
         const isLongerThenTwoChars = this.searchInputField.value.length < 2;
-        const selectedRecipientEqualSearchString = this.selectedRecipient && this.searchInputField.value === this.selectedRecipient.recipient;
+        const selectedRecipientEqualSearchString =
+            this.selectedRecipient &&
+            this.searchInputField.value === this.selectedRecipient.recipient &&
+            !this.selectedRecipient.payments;
 
         if (isLongerThenTwoChars || selectedRecipientEqualSearchString) {
             return;
@@ -73,11 +75,31 @@ class PaymentLiveRecipientSearch {
         const saveRegexpString = this.searchInputField.value
             .replace(/([()\[\]?])/g, '\\$1')
         const filterExpresion = new RegExp(saveRegexpString, 'i');
-        this.filteredRecipients = this.recipients.filter(recipient => filterExpresion.test(recipient.recipient));
+        // this.filteredRecipients.length = 0;
+        this.recipients.filter(recipient => filterExpresion.test(recipient.recipient))
+            .forEach(recipient => {
+                if (recipient.payments && recipient.payments.length) {
+                    recipient.payments.forEach((payment, index) => {
+                        const updated = {
+                            ...recipient,
+                            paymentTitle: payment.title,
+                            paymentIndex: index
+                        };
+                        this.filteredRecipients.push(updated);
+                    })
+                } else {
+                    this.filteredRecipients.push(recipient);
+                }
+            });
 
         this.filteredRecipients.forEach(recipient => {
             const parsedTemplate = this.rowTemplate.cloneNode(true);
             parsedTemplate.textContent = recipient.recipient;
+
+            if (recipient.paymentTitle) {
+                parsedTemplate.textContent += ` (${recipient.paymentTitle})`;
+            }
+
             list.appendChild(parsedTemplate);
         });
     }.bind(this)

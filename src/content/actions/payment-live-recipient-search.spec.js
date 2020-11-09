@@ -99,7 +99,7 @@ describe('payment-live-recipient-search', () => {
             await paymentLiveRecipientSearch.init();
         });
 
-        it('should should not add list when search input is lower then two characters', () => {
+        it('should not add list when search input is lower then two characters', () => {
             // given
             paymentLiveRecipientSearch.searchInputField.value = '1';
 
@@ -109,6 +109,47 @@ describe('payment-live-recipient-search', () => {
             // then
             const listWrapper = document.querySelector('.' + paymentLiveRecipientSearch.wrapperClassName)
             expect(listWrapper).toBeNull();
+        });
+
+        it('should not add list when search input will be equal recipient name', () => {
+            // given
+            const recipient = /** @type {Recipient} */{ recipient: 'test recipient' };
+            paymentLiveRecipientSearch.selectedRecipient = recipient;
+            paymentLiveRecipientSearch.searchInputField.value = recipient.recipient;
+
+            // when
+            paymentLiveRecipientSearch.filter();
+
+            // then
+            const listWrapper = document.querySelector('.' + paymentLiveRecipientSearch.wrapperClassName)
+            expect(listWrapper).toBeNull();
+        });
+
+        it('should add list when search input will be equal recipient name and payments will not be empty', () => {
+            // given
+            const recipient = /** @type {Recipient} */{ recipient: 'test recipient', payments: [{}] };
+            paymentLiveRecipientSearch.selectedRecipient = recipient;
+            paymentLiveRecipientSearch.searchInputField.value = recipient.recipient;
+
+            // when
+            paymentLiveRecipientSearch.filter();
+
+            // then
+            const listWrapper = document.querySelector('.' + paymentLiveRecipientSearch.wrapperClassName)
+            expect(listWrapper).toBeTruthy();
+        });
+
+        it('should add recipients list selected recipient name will not match to search value', () => {
+            // given
+            paymentLiveRecipientSearch.selectedRecipient = /** @type {Recipient} */ { recipient: 'a worker' }
+            paymentLiveRecipientSearch.searchInputField.value = 'tHe bOOs';
+
+            // when
+            paymentLiveRecipientSearch.filter();
+
+            // then
+            const listWrapper = document.querySelector('.' + paymentLiveRecipientSearch.wrapperClassName)
+            expect(listWrapper).toBeTruthy();
         });
 
         it('should add recipients list when input length will be equal two', () => {
@@ -199,6 +240,27 @@ describe('payment-live-recipient-search', () => {
 
             // then
             expect(paymentLiveRecipientSearch.wrapper.querySelector('ul li').textContent).toEqual(RECIPIENT_NAME);
+        });
+
+        it('should display one row for each payment, when there will be more then one', () => {
+            // given
+            const recipient = /** @type Recipient */{
+                recipient: 'multi payments',
+                payments: [{ title: 'first' }, { title: '~(^.^~)' }, { title: 'the last one' }]
+            };
+            recipients.push(recipient);
+            paymentLiveRecipientSearch.searchInputField.value = recipient.recipient;
+
+            // when
+            paymentLiveRecipientSearch.filter();
+
+            // then
+            const listWrapper = document.querySelector('.' + paymentLiveRecipientSearch.wrapperClassName)
+            const results = listWrapper.querySelectorAll('li');
+            expect(results.length).toEqual(recipient.payments.length);
+            expect(results[0].textContent).toEqual(`${recipient.recipient} (${recipient.payments[0].title})`);
+            expect(results[1].textContent).toEqual(`${recipient.recipient} (${recipient.payments[1].title})`);
+            expect(results[2].textContent).toEqual(`${recipient.recipient} (${recipient.payments[2].title})`);
         });
     });
 

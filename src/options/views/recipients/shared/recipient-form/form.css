@@ -9,10 +9,61 @@ label {
     width: 120px;
 }
 
+#payments {
+    margin-bottom: 20px;
+}
+
+#payments .row:not(header) {
+    padding-left: 50px;
+    font-size: 17px;
+}
+
+#payments .payment {
+    position: relative;
+}
+
+#payments .rows-wrapper .payment:not(:last-child) {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #1d3557;
+    padding-bottom: 20px;
+}
+
 .bottomPanel {
     padding-left: 105px;
 }
 
 .bottomPanel button {
     font-size: 20px;
+}
+
+.remove-payment-button,
+.add-payment-button {
+    display: block;
+    width: 1em;
+    height: 1em;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.add-payment-button {
+    font-size: 40px;
+    background-image: url('/resources/add.png');
+}
+
+.remove-payment-button {
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    transform: translateY(-50%);
+
+    font-size: 25px;
+    background-image: url('/resources/remove.png');
+}
+
+.remove-payment-button.disabled {
+    opacity: .1;
+}
+
+#payments .rows-wrapper .payment:not(:last-child) .remove-payment-button {
+    top: calc(50% - 12px);
 }

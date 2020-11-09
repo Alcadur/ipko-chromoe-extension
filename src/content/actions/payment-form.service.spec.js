@@ -24,14 +24,17 @@ describe('PaymentFormService', () => {
     });
 
     describe('fill', () => {
-        let recipient;
+
+        /** @type {FilteredRecipient} */let recipient;
         beforeEach(() => {
             recipient = {
                 fromNumber: '00 0000 0000 0000',
                 recipient: 'recipient 2',
                 recipientNumber: '12 3456 7891',
-                title: 'for test',
-                defaultAmount: 753159
+                payments: [
+                    { title: 'for test', amount: 753159 },
+                    { title: 'title 2', amount: 1528 }
+                ]
             }
 
             spyOn(paymentFormService, 'selectSourceAccount').and.returnValue(Promise.resolve());
@@ -42,6 +45,11 @@ describe('PaymentFormService', () => {
         });
 
        it('should run fill methods', async () => {
+           // given
+           const selectedIndex = 1;
+           recipient.paymentIndex = selectedIndex;
+           const expectedPayment = recipient.payments[selectedIndex];
+
            // when
            await paymentFormService.fill(recipient);
 
@@ -49,8 +57,19 @@ describe('PaymentFormService', () => {
            expect(paymentFormService.selectSourceAccount).toHaveBeenCalledWith(recipient.fromNumber);
            expect(paymentFormService.fillRecipient).toHaveBeenCalledWith(recipient.recipient);
            expect(paymentFormService.fillTargetAccount).toHaveBeenCalledWith(recipient.recipientNumber);
-           expect(paymentFormService.changeTitle).toHaveBeenCalledWith(recipient.title);
-           expect(paymentFormService.changeAmount).toHaveBeenCalledWith(recipient.defaultAmount);
+           expect(paymentFormService.changeTitle).toHaveBeenCalledWith(expectedPayment.title);
+           expect(paymentFormService.changeAmount).toHaveBeenCalledWith(expectedPayment.amount);
+       });
+
+       it('should not throw an error when there will be no payments', async (done) => {
+           // given
+           recipient.payments = undefined;
+
+           // when
+           expect(async function () {
+               await paymentFormService.fill(recipient);
+               done();
+           }).not.toThrow();
        });
     });
 

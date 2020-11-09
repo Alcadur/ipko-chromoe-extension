@@ -20,7 +20,7 @@ export class RecipientEditController {
         this.dialogService = dialogService;
         this.recipientForm.appendFormTo('#editForm');
         this.getRecipientByName(viewManager.getPathVariables().recipientName).then((recipient) => {
-            this.recipientForm.update(recipient).then();
+            this.recipientForm.update(recipient);
             this.recipientName = recipient.recipient;
         });
 

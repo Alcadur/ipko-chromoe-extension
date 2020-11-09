@@ -1,31 +1,22 @@
 'use strict';
 
-import { viewManagerProvider } from '../../../../view-manager.js';
-
 /**
- * @typedef RecipientField
- * @property {String} id
- * @property {String} label
- * @property {Object} [actions]
+ * @typedef PaymentFields
+ * @property {HTMLInputElement} title
+ * @property {HTMLInputElement} amount
  */
 
+import { recipientFormTemplate } from './template.js';
+
 export class RecipientForm {
-    /** @private
-     * @type RecipientField[]*/
-    fields = [
-        {
-            id: 'fromNumber', actions: {
-                input: this.formatAccountNumber
-            },
-        },
-        { id: 'recipient' },
-        {
-            id: 'recipientNumber', actions: {
-                input: this.formatAccountNumber
-            }
-        },
-        { id: 'title' },
-        { id: 'defaultAmount' },
+    /**
+     * @private
+     * @type {string[]}
+     */
+    fieldsIds = [
+        'fromNumber',
+        'recipient',
+        'recipientNumber',
     ];
     /**
      * @private
@@ -34,48 +25,132 @@ export class RecipientForm {
     fieldsInputs = {};
     /**
      * @private
+     * @type {PaymentFields[]}
+     */
+    paymentsFields = [];
+    /**
+     * @private
      * @type Element
      */
     form;
-    /**
-     * @type function
-     */
-    updateWaitingForFormPromiseResolver;
 
     /**
      * @param {Query} query
-     * @param {ViewManager} viewManager
+     * @param {TemplateHelper} templateHelper
      */
-    constructor(query, viewManager) {
+    constructor(query, templateHelper) {
         this.query = query;
-        this.viewManager = viewManager;
+        this.templateHelper = templateHelper;
 
-        this.createForm().then(() => {
-            if (this.updateWaitingForFormPromiseResolver) {
-                this.updateWaitingForFormPromiseResolver()
-            }
+        this.createForm()
+
+        this.query.one('.add-payment-button', this.form).addEventListener('click', () => {
+            this.createPaymentRows();
+            this.enableRemoveButton();
         });
     }
 
     /**
      * @private
-     * @return {Promise<void>}
      */
-    async createForm() {
-        this.form = document.createElement('div');
-        this.form.innerHTML = await this.viewManager.fetchTemplate('recipients/shared/recipient-form');
-
-        this.fields.forEach(field => {
-            const inputElement = this.query.one(`input#${field.id}`, this.form);
-            this.fieldsInputs[field.id] = inputElement;
-
-            if (field.actions) {
-                Object.keys(field.actions).forEach(eventName => {
-                    inputElement.addEventListener(eventName, field.actions[eventName]);
-                });
-            }
+    createForm() {
+        const template = document.createElement('template');
+        template.innerHTML = recipientFormTemplate;
+        this.form = template.content.firstElementChild;
+        this.query.all('.format-account', this.form).forEach(element => {
+            element.addEventListener('input', this.formatAccountNumber);
         });
+
+        this.fieldsIds.forEach(field => {
+            this.fieldsInputs[field] = this.query.one(`#${field}`, this.form);
+        })
+
+        this.createPaymentRows();
+        this.disabledRemoveButtonIfLast();
     }
+
+    /**
+     * @private
+     * @return {Element}
+     */
+    createPaymentRows() {
+        const titleFieldsWrapper = this.templateHelper.getFirstTemplateNode('#rowTemplate', this.form)
+        this.fillRowTemplateAttributes(titleFieldsWrapper, IdGenerator.nextId('title'), 'Tytuł');
+        const amountFieldsWrapper = this.templateHelper.getFirstTemplateNode('#rowTemplate', this.form);
+        this.fillRowTemplateAttributes(amountFieldsWrapper, IdGenerator.nextId('amount'), 'Kwota');
+
+        const payment = this.templateHelper
+            .getFirstTemplateNode('#paymentRowTemplate', this.form);
+        this.query.one('.remove-payment-button', payment).addEventListener('click', (event) => {
+            const input = event.target.parentElement.querySelector('[id^="title"]');
+            this.removePayment(payment, input);
+        });
+
+        payment.appendChild(titleFieldsWrapper);
+        payment.appendChild(amountFieldsWrapper);
+
+        this.paymentsFields.push({
+            title: this.query.one('input', titleFieldsWrapper),
+            amount: this.query.one('input', amountFieldsWrapper)
+        });
+
+        this.query.one('#payments .rows-wrapper', this.form)
+            .appendChild(payment);
+
+        return payment;
+    }
+
+    /**
+     * @private
+     */
+    disabledRemoveButtonIfLast() {
+        if (this.paymentsFields.length === 1) {
+            this.query.one('.remove-payment-button', this.form).classList.add('disabled');
+        }
+    }
+
+    /**
+     * @private
+     * @param {Element} paymentRow
+     * @param {HTMLInputElement} titleInput
+     */
+    removePayment(paymentRow, titleInput) {
+        if (this.paymentsFields.length - 1 === 0) {
+            return
+        }
+
+        paymentRow.remove();
+
+        const paymentIndex = this.paymentsFields.findIndex((paymentFields) =>
+            paymentFields.title === titleInput);
+        this.paymentsFields.splice(paymentIndex, 1);
+
+        this.disabledRemoveButtonIfLast();
+    }
+
+    /**
+     * @private
+     */
+    enableRemoveButton() {
+        const removeButtonElement = this.query.one('.remove-payment-button.disabled');
+
+        if (removeButtonElement) {
+            removeButtonElement.classList.remove('disabled');
+        }
+    }
+
+    /**
+     * @param {Element} row
+     * @param {string} id
+     * @param {string} label
+     */
+    fillRowTemplateAttributes(row, id, label) {
+        const labelNode = this.query.one('label', row);
+        labelNode.setAttribute('for', id);
+        labelNode.textContent = label;
+        this.query.one('input', row).id = id;
+    }
+
 
     /**
      * @param {String|Node} parentSelectorOrNode
@@ -108,17 +183,20 @@ export class RecipientForm {
      * @param {Recipient} recipient
      */
     update(recipient) {
-        return new Promise((resolve) => {
-            if (Object.keys(this.fieldsInputs).length) {
-                return resolve();
-            }
-
-            this.updateWaitingForFormPromiseResolver = resolve;
-        }).then(() => {
-            this.fields.forEach(field => {
-                this.fieldsInputs[field.id].value = recipient[field.id] || '';
-            })
+        this.fieldsIds.forEach(field => {
+            this.form[field].value = recipient[field] || '';
         });
+
+        if (recipient.payments && recipient.payments.length) {
+            this.paymentsFields = [];
+            this.query.one('#payments .rows-wrapper').innerHTML = '';
+
+            recipient.payments.forEach(payment => {
+                const paymentElement = this.createPaymentRows();
+                this.query.one('input[id^="title"]', paymentElement).value = payment.title;
+                this.query.one('input[id^="amount"]', paymentElement).value = payment.amount;
+            });
+        }
     }
 
     /**
@@ -128,13 +206,21 @@ export class RecipientForm {
     getRecipient(objectRef) {
         /** @type Object|Recipient */const recipient = objectRef || {};
 
-        this.fields.forEach(field => {
-            recipient[field.id] = this.fieldsInputs[field.id].value;
+        this.fieldsIds.forEach(field => {
+            recipient[field] = this.fieldsInputs[field].value;
         });
+
+        recipient.payments = this.paymentsFields.map(paymentField => ({
+            title: paymentField.title.value,
+            amount: paymentField.amount.value
+        }));
 
         return /** @type Recipient */recipient;
     }
 
+    /**
+     * @return {boolean}
+     */
     isValid() {
         return !!this.fieldsInputs.recipient.value.trim();
     }
@@ -174,5 +260,5 @@ export class RecipientForm {
 }
 
 export function recipientFormFactory() {
-    return new RecipientForm(queryFactory(), viewManagerProvider());
+    return new RecipientForm(queryFactory(), templateHelperFactory());
 }

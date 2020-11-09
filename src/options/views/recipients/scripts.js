@@ -28,8 +28,6 @@ function addRow(recipient) {
     row.querySelector('.source-account div').textContent = recipient.fromNumber;
     row.querySelector('.recipient-name div').textContent = recipient.recipient;
     row.querySelector('.recipient-account div').textContent = recipient.recipientNumber;
-    row.querySelector('.title div').textContent = recipient.title;
-    row.querySelector('.amount div').textContent = recipient.defaultAmount || 0;
 
     row.addEventListener('click',() => location.hash = EDIT_RECIPIENT(recipient.recipient))
 

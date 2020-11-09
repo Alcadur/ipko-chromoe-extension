@@ -1,10 +1,15 @@
 /**
+ * @typedef Payment
+ * @property {string} title
+ * @property {(string|number)} [amount]
+ */
+
+/**
  * @typedef {Object} Recipient
  * @property {(string|number)} fromNumber
  * @property {string} recipient
  * @property {(number|string)} recipientNumber
- * @property {string} title
- * @property {(string|number)} [defaultAmount]
+ * @property {Payment[]} payments
  */
 class CollectData {
     recipients = [];

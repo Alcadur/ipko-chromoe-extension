@@ -11,15 +11,19 @@ class PaymentFormService {
     }
 
     /**
-     * @param {Recipient} recipient
+     * @param {FilteredRecipient} recipient
      * @return {Promise<void>}
      */
     async fill(recipient) {
         await this.selectSourceAccount(recipient.fromNumber.toString());
         this.fillRecipient(recipient.recipient);
         this.fillTargetAccount(recipient.recipientNumber);
-        this.changeTitle(recipient.title);
-        this.changeAmount(recipient.defaultAmount);
+
+        if (recipient.payments) {
+            const payment = recipient.payments[recipient.paymentIndex]
+            this.changeTitle(payment.title);
+            this.changeAmount(payment.amount);
+        }
     }
 
     /**

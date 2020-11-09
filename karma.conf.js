@@ -23,6 +23,9 @@ module.exports = function(config) {
       'src/shared/wait.js',
       'src/shared/store.js',
       'src/shared/input.service.js',
+      'src/shared/id-generator.js',
+      'src/shared/outer-promise.js',
+      'src/shared/template-helper.js',
 
       'src/shared/*.spec.js',
       'src/content/**/*.js',
