@@ -25,13 +25,13 @@ bank credential or any other sensitive data.
 
  - [ ] automatically save recipient after confirm it on the bank website
  - [ ] wiki page (in polish)
- - [ ] possibility to have multiple transaction titles and amount for one recipient
  - [ ] full extension options page
  - [ ] save user account list from users products
  - [ ] manual add account data
  - [ ] edit account data
  
- - [x] format account number by a pattern: `\d{2} (?:\d{4}\s?){6,}`
+ - [x] possibility to have multiple transaction titles and amount- for one recipient
+ - [x] format account number by a pattern: `/^([A-Za-z]{0,2}\d{2})\s*|(\d{4})\s*/g`
  - [x] manual add recipient from extension options
  - [x] edit recipient from extension options
  - [x] live search on recipient list
