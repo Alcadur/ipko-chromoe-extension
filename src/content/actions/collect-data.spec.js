@@ -4,10 +4,12 @@ describe('collect-data.js', () => {
     let waitMock;
     let backButtonAction;
     let collectData;
+    let messageServiceMock;
 
     beforeEach(() => {
         storageMock = jasmine.createSpyObj('storageMock', ['saveRecipients', 'getRecipients']);
         storageMock.getRecipients.and.callFake(() => new Promise((resolve) => resolve()));
+        messageServiceMock = jasmine.createSpyObj('messageService', ['sendMessageToExtension'])
 
         waitMock = jasmine.createSpyObj('waitMock', ['for']);
         waitMock.for.and.callFake(() => new Promise((resolve) => resolve()));
@@ -15,7 +17,7 @@ describe('collect-data.js', () => {
         spy = jasmine.createSpy('spy');
         backButtonAction = jasmine.createSpy('backButtonAction');
         prepareDOM();
-        collectData = new CollectData(queryFactory(), storageMock, waitMock);
+        collectData = new CollectData(queryFactory(), storageMock, waitMock, messageServiceMock);
     });
 
     describe('collectData', () => {
@@ -37,6 +39,16 @@ describe('collect-data.js', () => {
                     <tr></tr>
                 </table>
             `;
+        });
+
+        it('should wait until list view will not be loaded', (done) => {
+            // when
+            collectData.collect().then(() => {
+                // then
+                expect(waitMock.for).toHaveBeenCalledWith(collectData.listTableSelector);
+                expect(waitMock.for).toHaveBeenCalledTimes(1);
+                done();
+            });
         });
 
         it('should count number of all recipients', (done) => {
@@ -98,7 +110,7 @@ describe('collect-data.js', () => {
             });
         });
 
-        it('should save recipients, clear layer and reset current row index', (done) => {
+        it('should save recipients, clear layer, send message to extinction popup and reset current row index', (done) => {
             // given
             collectData.currentRowIndex = 555;
             collectData.hasNext.and.returnValue(false);
@@ -109,6 +121,7 @@ describe('collect-data.js', () => {
                 expect(storageMock.saveRecipients).toHaveBeenCalledTimes(1);
                 expect(storageMock.saveRecipients).toHaveBeenCalledWith(collectData.recipients);
                 expect(collectData.closeLayer).toHaveBeenCalledTimes(1);
+                expect(messageServiceMock.sendMessageToExtension).toHaveBeenCalledWith(MessageActionType.enableGetRecipientButton)
                 expect(collectData.currentRowIndex).toEqual(0);
                 done();
             });
@@ -287,23 +300,12 @@ describe('collect-data.js', () => {
     });
 
     describe('backToList', () => {
-        it('should click on back button', (done) => {
+        it('should click on back button', () => {
             // when
-            collectData.backToList().then(() => {
-                // then
-                expect(backButtonAction).toHaveBeenCalledTimes(1);
-                done();
-            });
-        });
+            collectData.backToList()
 
-        it('should wait until list view will not be loaded', (done) => {
-            // when
-            collectData.backToList().then(() => {
-                // then
-                expect(waitMock.for).toHaveBeenCalledWith(collectData.listTableSelector);
-                expect(waitMock.for).toHaveBeenCalledTimes(1);
-                done();
-            });
+            // then
+            expect(backButtonAction).toHaveBeenCalledTimes(1);
         });
     });
 
@@ -344,6 +346,23 @@ describe('collect-data.js', () => {
             expect(result).toBe(false);
         });
     });
+
+    describe('isWorking', () => {
+        describe('[generated] should return isLayerOpen', () => {
+            [true, false].forEach((value) => {
+                it(`enter data: ${value}`, () => {
+                    // given
+                    collectData.isLayerOpen = value;
+
+                    // when
+                    const result = collectData.isWorking();
+
+                    // then
+                    expect(result).toEqual(value);
+                });
+            });
+        })
+    })
 
     function prepareDOM() {
         document.body.innerHTML = `

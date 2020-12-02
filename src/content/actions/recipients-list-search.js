@@ -11,6 +11,9 @@ class RecipientsListSearch {
 
     init() {
         this.table = this.query.one('tbody.iwUhV');
+        if (!this.table) {
+            return;
+        }
         this.rows = this.table.querySelectorAll('tr');
         this.searchInput = this.query.one('[name$="data.filterForm.recipient"]');
         this.searchInput.addEventListener('input', () => this.searchInputEventHandler());
@@ -60,7 +63,7 @@ class RecipientsListSearch {
 /**
  * @returns {RecipientsListSearch}
  */
-function recipientsListSearchFactory() { return new RecipientsListSearch(queryFactory()); };
+function recipientsListSearchFactory() { return new RecipientsListSearch(queryFactory()); }
 
 /**
  * @type {RecipientsListSearch}

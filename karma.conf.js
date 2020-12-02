@@ -17,6 +17,8 @@ module.exports = function(config) {
     files: [
       'tests-setup/tests-helpers.js',
       'tests-setup/test-init-script.js',
+      'src/shared/provider-generator.js',
+      'src/shared/tab-utils.js',
       'src/shared/message-action.type.js',
       'src/shared/message.service.js',
       'src/shared/query.js',
@@ -26,6 +28,7 @@ module.exports = function(config) {
       'src/shared/id-generator.js',
       'src/shared/outer-promise.js',
       'src/shared/template-helper.js',
+      'src/shared/dialog.service.js',
 
       'src/shared/*.spec.js',
       'src/content/**/*.js',

@@ -3,7 +3,6 @@
 import { viewManagerProvider } from '../../../view-manager.js';
 import { recipientFormFactory } from '../shared/recipient-form/recipient-form.js';
 import { RECIPIENTS_LIST } from '../../../options-urls.js';
-import { dialogServiceFactory } from '../shared/dialog-service/dialog.service.js';
 
 export class RecipientEditController {
     /**

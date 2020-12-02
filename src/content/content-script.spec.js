@@ -19,12 +19,8 @@ describe('ContentScript', () => {
 
     describe('constructor', () => {
         it(`should add listener for message type: ${MessageActionType.getRecipients}`, () => {
-            // when
-            messageServiceMock.actions[MessageActionType.getRecipients]();
-
             // then
             expect(messageServiceMock.addMessageActionListener).toHaveBeenCalledWith(MessageActionType.getRecipients, jasmine.any(Function));
-            expect(collectDataMock.collect).toHaveBeenCalled();
         });
 
         it(`should add listener for message type: ${MessageActionType.getLastPage}`, () => {
@@ -47,6 +43,68 @@ describe('ContentScript', () => {
         });
     });
 
+    describe(`message action listener handler for: ${MessageActionType.getRecipients}`, () => {
+        const RECIPIENTS_LIST_CONTROL_CONTENT = '-*-RecipientsList-*-';
+
+        it('should collect data when last page will be "OdbiorcyKrajowi"', () => {
+            // given
+            contentScript.lastPage = 'OdbiorcyKrajowi';
+
+            // when
+            messageServiceMock.actions[MessageActionType.getRecipients]();
+            // then
+            expect(collectDataMock.collect).toHaveBeenCalled();
+        });
+
+        it('should open top payment many and click recipient list button', (done) => {
+            // given
+            let forResolver = () => { console.log('not promise resolver was called') };
+            const forResolverProvider = () => forResolver;
+            waitMock.for.and.callFake(() => {
+                return new Promise((resolve) => {
+                    forResolver = resolve;
+                });
+            });
+            addDOM(forResolverProvider);
+            contentScript.lastPage = 'Not-OdbiorcyKrajowi';
+
+            // when
+            messageServiceMock.actions[MessageActionType.getRecipients]();
+
+            // then
+            setTimeout(() => {
+                expect(document.body.innerHTML).toEqual(RECIPIENTS_LIST_CONTROL_CONTENT);
+                expect(collectDataMock.collect).toHaveBeenCalled();
+                done();
+            });
+
+        });
+
+        function addDOM(forResolverProvider) {
+            window.forResolverProvider = forResolverProvider;
+            const scriptTag = document.createElement('script');
+            scriptTag.innerHTML = `
+            function setControlContent() {
+            console.log('ppp');
+                    document.body.innerHTML = '${RECIPIENTS_LIST_CONTROL_CONTENT}'
+                }
+                function addRecipientButton() {                    
+                    setTimeout(() => {
+                        document.body.innerHTML += '<a href="#INT_RECIPIENTS_NORMAL" onclick="setControlContent()"></a>';
+                        window.forResolverProvider()(document.querySelector('[href="#INT_RECIPIENTS_NORMAL"]'));
+                    });
+                }
+`
+            document.body.innerHTML = '';
+            document.body.appendChild(scriptTag);
+            document.body.innerHTML += `
+                <div class="QcltV">
+                <button data-text="Płatności" onclick="addRecipientButton()"></button></div>
+            `;
+
+        }
+    });
+
     describe('pageClickHandler', () => {
         it('should wait for title element and until loader will gone', async () => {
             // given
@@ -60,7 +118,7 @@ describe('ContentScript', () => {
             expect(waitMock.untilLoaderGone).toHaveBeenCalled();
         });
 
-        it ('should update lastPage', async () => {
+        it('should update lastPage', async () => {
             // given
             const PAGE_TITLE = 'page-title';
             const TAB_TITLE = 'my*tab';
@@ -73,7 +131,7 @@ describe('ContentScript', () => {
             expect(contentScript.lastPage).toEqual(PAGE_TITLE + TAB_TITLE);
         });
 
-        it ('should not throw error when there will be no title element', async () => {
+        it('should not throw error when there will be no title element', async () => {
             // given
             waitMock.for.and.returnValue(Promise.reject());
             const TAB_TITLE = 'my*tab';
@@ -86,7 +144,7 @@ describe('ContentScript', () => {
             expect(contentScript.lastPage).toEqual(TAB_TITLE);
         });
 
-        it ('should not throw error when there will be no tab element', async () => {
+        it('should not throw error when there will be no tab element', async () => {
             // given
             const PAGE_TITLE = 'page-title';
             document.body.innerHTML = `<h1 class='TTPMB'>${PAGE_TITLE}</h1>`;

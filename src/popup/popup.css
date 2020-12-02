@@ -1,9 +1,10 @@
-
-
 body {
+    display: flex;
+    flex-direction: column;
     width: 170px;
 
     color: #457B9D;
+    align-items: center;
 }
 
 button {

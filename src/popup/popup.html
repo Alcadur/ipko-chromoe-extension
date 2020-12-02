@@ -3,14 +3,19 @@
 <head>
     <title>IPKO+ popup</title>
     <meta charset="UTF-8">
+    <script src="../shared/tab-utils.js"></script>
+    <script src="../shared/provider-generator.js"></script>
     <script src="../shared/message-action.type.js"></script>
     <script src="../shared/query.js"></script>
     <script src="../shared/message.service.js"></script>
+    <script src="../shared/dialog.service.js"></script>
     <script type="module" src="index.js"></script>
     <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-    <button id="getRecipients" disabled>Pobierz dane odbiorców</button>
+    <section class="ipko-only-section">
+        <button id="getRecipients" disabled>Pobierz dane odbiorców</button>
+    </section>
     <button id="recipients">Odbiorcy</button>
 </body>
 </html>

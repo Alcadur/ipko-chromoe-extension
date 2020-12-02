@@ -1,5 +1,3 @@
-import { DialogService } from './dialog.service.js';
-
 describe('DialogService', () => {
     let service;
 

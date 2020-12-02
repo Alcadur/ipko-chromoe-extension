@@ -5,8 +5,8 @@ class Query {
      * Alias for document.querySelector
      *
      * @param {string} selector
-     * @param {Element} [parentElement=document.body]
-     * @returns {Element}
+     * @param {HTMLElement} [parentElement=document.body]
+     * @returns {HTMLElement}
      */
     one(selector, parentElement = document.body) {
         return parentElement.querySelector(selector);
@@ -16,8 +16,8 @@ class Query {
      * Alias for document.querySelectorAll
      *
      * @param {string} selector
-     * @param {Element} parentElement,
-     * @returns {NodeListOf<Element>}
+     * @param {HTMLElement} parentElement,
+     * @returns {NodeListOf<HTMLElement>}
      */
     all(selector, parentElement = document.body) {
         return parentElement.querySelectorAll(selector);

@@ -12,6 +12,13 @@ describe('recipients-list-search', () => {
     });
 
     describe('init', () => {
+        it('should not throw error when there will bo no table', () => {
+            // given
+            document.body.innerHTML = '';
+
+            expect(() => recipientsListSearch.init()).not.toThrowError();
+        });
+
         it('should extend rows by custom attribute', () => {
             // given
 

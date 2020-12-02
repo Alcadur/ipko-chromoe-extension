@@ -26,14 +26,17 @@ class CollectData {
      * @param {Query} query
      * @param {Storage} storage
      * @param {Wait} wait
+     * @param {MessageService} messageService
      */
-    constructor(query, storage, wait) {
+    constructor(query, storage, wait, messageService) {
         this.query = query;
         this.storage = storage;
         this.wait = wait;
+        this.messageService = messageService;
     }
 
     async collect() {
+        await this.wait.for(this.listTableSelector);
         this.numberOfRecipients = this.query.all(this.listTableSelector + ' tr').length;
         if (!this.isLayerOpen) {
             this.openLayer();
@@ -45,6 +48,7 @@ class CollectData {
             await this.collect();
         } else {
             await this.storage.saveRecipients(this.recipients);
+            this.messageService.sendMessageToExtension(MessageActionType.enableGetRecipientButton);
             this.closeLayer();
             this.currentRowIndex = 0;
         }
@@ -84,9 +88,8 @@ class CollectData {
         await this.wait.for(this.detailsPageCheckSelector);
     }
 
-    async backToList() {
+    backToList() {
         this.query.one('button[value="cancel"]').click();
-        await this.wait.for(this.listTableSelector);
     }
 
     /**
@@ -96,12 +99,16 @@ class CollectData {
         this.currentRowIndex += 1;
         return this.currentRowIndex < this.numberOfRecipients;
     }
+
+    isWorking() {
+        return this.isLayerOpen;
+    }
 }
 
 /**
  * @returns {CollectData}
  */
-function collectDataFactory() { return new CollectData(queryFactory(), storageFactory(), waitFactory()); }
+function collectDataFactory() { return new CollectData(queryFactory(), storageFactory(), waitFactory(), messageServiceFactory()); }
 
 /**
  * @type {CollectData}

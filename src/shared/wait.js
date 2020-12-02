@@ -1,5 +1,10 @@
 'use strict';
 
+/**
+ * @callback forPromiseResolver
+ * @param {HTMLElement} element
+ */
+
 class Wait {
     BASE_TIMEOUT_IN_MS = 300;
     trialCount = 0;
@@ -30,7 +35,7 @@ class Wait {
      * Checking loop will be brake when the counter will reach {@param trialLimit}
      *
      * @param {string} selector
-     * @param {function} promiseResolver
+     * @param {forPromiseResolver} promiseResolver
      * @param {function} promiseReject
      * @param {number} trialLimit
      */
@@ -44,7 +49,7 @@ class Wait {
 
             if(this.query.one(selector)) {
                 this.trialCount = 0;
-                promiseResolver();
+                promiseResolver(this.query.one(selector));
             } else {
                 this.trialCount += 1;
                 this.forElement(selector, promiseResolver, promiseReject, trialLimit);

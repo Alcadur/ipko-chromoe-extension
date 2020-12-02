@@ -2,9 +2,15 @@ describe('MessageService', () => {
     /** @type MessageService */let messageService;
     let tabs;
 
+    let tabUtils;
+    let ipkoTab;
+
     beforeEach(() => {
+        ipkoTab = { id: 89 };
+        tabUtils = jasmine.createSpyObj('tabUtils', ['getOnlyIPkoTab']);
+        tabUtils.getOnlyIPkoTab.and.callFake((callback) => callback(ipkoTab));
         tabs = [{ id: '22' }, { id: '44' }, { id: '88' }];
-        messageService = new MessageService();
+        messageService = new MessageService(tabUtils);
     });
 
     describe('global scope', () => {
@@ -12,53 +18,57 @@ describe('MessageService', () => {
     });
 
     describe('sendMessageToTab', () => {
-        it('should send message to first tab which match query', () => {
+        it('should get ipko tab and send message', () => {
             // given
-            const MESSAGE = { key: 'value' };
-            chrome.tabs.query.callsFake((query, callback) => callback(tabs));
+            const callback = jasmine.createSpy('callback');
+            const message = { message: 'test message to tab' };
+            const expectedArgs = [ipkoTab.id, message, null, callback];
 
             // when
-            messageService.sendMessageToTab(MESSAGE);
+            messageService.sendMessageToTab(message, callback);
 
             // then
-            expect(chrome.tabs.sendMessage.withArgs(tabs[0].id, MESSAGE, null, undefined).calledOnce)
-                .toBe(true, 'chrome.tabs.sendMessage was call with wrong arguments or was not call at all');
+            expect(chrome.tabs.sendMessage.withArgs(...expectedArgs).calledOnce).toBe(true);
+        });
+    });
+
+    describe('sendMultiMessagesToTab', () => {
+        const ACTION_ONE_NAME = 'action-one';
+        const ACTION_TWO_NAME = 'action-two';
+        let callback;
+        let resolvers;
+
+        beforeEach(() => {
+            callback = jasmine.createSpy('callback');
+            resolvers = {};
+
+            chrome.tabs.sendMessage.callsFake((_, message, __, sendCallback) => {
+                return new Promise(resolver => {
+                    resolvers[message.actionName] = (args) => {
+                        sendCallback(args)
+                        resolver();
+                    };
+                });
+            });
         });
 
-        it('should not throw an error when there will be non matching tabs', () => {
+        it('should wait for all results and call callback with results in expected order', () => {
             // given
-            chrome.tabs.query.callsFake((query, callback) => callback(undefined));
-
-            // then
-            // when
-            expect(messageService.sendMessageToTab).not.toThrowError();
-        });
-
-        it('should select current active tab with url https://wwww.ipko.pl/*', () => {
-            // given
-            chrome.tabs.query.callsFake((query) => {
-                // then
-                expect(query.active).toBeTrue();
-                expect(query.currentWindow).toBeTrue();
-                expect(query.url).toEqual('https://www.ipko.pl/*');
-            })
+            const r1 = '1';
+            const r2 = '2';
 
             // when
-            messageService.sendMessageToTab(null);
-        });
+            messageService.sendMultiMessagesToTab([
+                { actionName: ACTION_ONE_NAME },
+                { actionName: ACTION_TWO_NAME }
+            ], callback);
 
-        it('should pass callback function as last argument of sendMessage', () => {
-            // then
-            chrome.tabs.query.callsFake((query, callback) => callback(tabs));
-            const callback = () => {
-            };
 
-            // when
-            messageService.sendMessageToTab(null, callback);
+            resolvers[ACTION_TWO_NAME](r2);
+            resolvers[ACTION_ONE_NAME](r1);
 
             // then
-            expect(chrome.tabs.sendMessage.withArgs(tabs[0].id, null, null, callback).calledOnce)
-                .toBe(true, 'callback function was not pass to sendMessage');
+            expect(callback).toHaveBeenCalledWith([r1, r2]);
         });
     });
 
