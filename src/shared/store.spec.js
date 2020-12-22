@@ -68,10 +68,29 @@ describe('store.js', () => {
             // when
             storage.getRecipients().then(() => {
                // then
-               expect(chrome.storage.local.get.withArgs(RECIPIENTS_KEY).calledOnce)
+               expect(chrome.storage.local.get.withArgs(RECIPIENTS_KEY).called)
                    .toBe(true, 'chrome.storage.local.get was not called with correct arguments');
                done();
             });
+         });
+      });
+   });
+
+   describe('addReRecipient', () => {
+      it('should get all recipients, add the new one and save them all', (done) => {
+         // given
+         const newRecipient = /** @type {Recipient} */{ recipient: 'the new one' };
+         const oldRecipients = [{ recipient: 'old one' }];
+         const expected = [...oldRecipients, newRecipient];
+         chrome.storage.local.get.callsFake((a, b) => b({ [RECIPIENTS_KEY]: oldRecipients }));
+         chrome.storage.local.set.callsFake((a, b) => b());
+
+         // when
+         storage.addReRecipient(newRecipient).then(() => {
+            // then
+            expect(chrome.storage.local.set.withArgs({[RECIPIENTS_KEY]: expected}).calledOnce)
+                .toBe(true, 'chrome.storage.local.save was not call with correct arguments')
+            done();
          });
       });
    });

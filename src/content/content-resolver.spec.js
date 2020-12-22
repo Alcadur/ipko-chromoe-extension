@@ -4,16 +4,18 @@ describe('content-resolver.js', () => {
     let recipientsListSearchMock;
     let collectDataMock;
     let paymentLiveRecipientSearchMock;
+    let confirmRecipientAddingFormMock
 
     beforeEach(() => {
         waitMock = jasmine.createSpyObj('waitMock', {for: Promise.resolve(), untilLoaderGone: Promise.resolve('')});
         collectDataMock = jasmine.createSpyObj('collectDataMock', ['collect']);
         recipientsListSearchMock = jasmine.createSpyObj('recipientsListSearchMock', ['init']);
         paymentLiveRecipientSearchMock = jasmine.createSpyObj('paymentLiveRecipientSearchMock', ['init']);
+        confirmRecipientAddingFormMock = jasmine.createSpyObj('confirmRecipientAddingFormMock', ['init']);
 
         document.body.innerHTML = '<form><table class="_3082t"><div></div></table></form>';
 
-        contentResolver = new ContentResolver(queryFactory(), waitMock, collectDataMock, recipientsListSearchMock, paymentLiveRecipientSearchMock);
+        contentResolver = new ContentResolver(queryFactory(), waitMock, collectDataMock, recipientsListSearchMock, paymentLiveRecipientSearchMock, confirmRecipientAddingFormMock);
     });
 
     describe('updatePageContent', () => {
@@ -86,6 +88,30 @@ describe('content-resolver.js', () => {
                     expect(paymentLiveRecipientSearchMock.init).toHaveBeenCalledTimes(1);
                     done();
                 });
+            });
+        });
+
+        describe('PotwierdźDodanie', () => {
+            it('should wait until loader will be gone and the submit button will be shown before any other action', (done) => {
+                // given
+                let untilLoaderGoneResolver = () => {
+                };
+                let forResolver = () => {
+                };
+
+                waitMock.untilLoaderGone.and.returnValue(new Promise((resolve) => untilLoaderGoneResolver = resolve));
+                waitMock.for.and.returnValue(new Promise((resolve) => forResolver = resolve));
+
+                // when
+                contentResolver.pageTitleMap.get('PotwierdźDodanie')().then(() => {
+                    // then
+                    expect(confirmRecipientAddingFormMock.init).toHaveBeenCalledTimes(1);
+                    done();
+                });
+
+                // when 2
+                untilLoaderGoneResolver();
+                forResolver();
             });
         });
     });

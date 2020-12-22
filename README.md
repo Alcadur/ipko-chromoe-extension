@@ -23,13 +23,13 @@ bank credential or any other sensitive data.
 
 ### Things to do before release
 
- - [ ] automatically save recipient after confirm it on the bank website
- - [ ] wiki page (in polish)
- - [ ] full extension options page
  - [ ] save user account list from users products
  - [ ] manual add account data
  - [ ] edit account data
+ - [ ] full extension options page
+ - [ ] wiki page (in polish)
  
+ - [x] automatically save recipient after confirm it on the bank website
  - [x] possibility to have multiple transaction titles and amount- for one recipient
  - [x] format account number by a pattern: `/^([A-Za-z]{0,2}\d{2})\s*|(\d{4})\s*/g`
  - [x] manual add recipient from extension options
@@ -45,3 +45,4 @@ bank credential or any other sensitive data.
  - [ ] Integrate extension with leasing portal
  - [ ] Improve popup message layout
  - [ ] add search in options recipients list
+ - [ ] handle multiple recipient names (custom names)

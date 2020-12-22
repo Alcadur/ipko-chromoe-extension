@@ -12,6 +12,7 @@
       "css": ["src/content/style.css"],
       "js": [
         "src/shared/provider-generator.js",
+        "src/shared/tab-utils.js",
         "src/shared/message-action.type.js",
         "src/shared/message.service.js",
         "src/shared/query.js",
@@ -22,6 +23,7 @@
         "src/content/actions/recipients-list-search.js",
         "src/content/actions/payment-form.service.js",
         "src/content/actions/payment-live-recipient-search.js",
+        "src/content/actions/confirm-recipient-adding-form.js",
         "src/content/content-resolver.js",
         "src/content/content-script.js"
       ]

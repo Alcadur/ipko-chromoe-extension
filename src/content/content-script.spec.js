@@ -85,7 +85,6 @@ describe('ContentScript', () => {
             const scriptTag = document.createElement('script');
             scriptTag.innerHTML = `
             function setControlContent() {
-            console.log('ppp');
                     document.body.innerHTML = '${RECIPIENTS_LIST_CONTROL_CONTENT}'
                 }
                 function addRecipientButton() {                    
@@ -120,8 +119,8 @@ describe('ContentScript', () => {
 
         it('should update lastPage', async () => {
             // given
-            const PAGE_TITLE = 'page-title';
-            const TAB_TITLE = 'my*tab';
+            const PAGE_TITLE = 'Page-title';
+            const TAB_TITLE = 'My*tab';
             document.body.innerHTML = `<h1 class='TTPMB'>${PAGE_TITLE}</h1><span class='_15ytj'>${TAB_TITLE}</span>`;
 
             // when
@@ -134,7 +133,7 @@ describe('ContentScript', () => {
         it('should not throw error when there will be no title element', async () => {
             // given
             waitMock.for.and.returnValue(Promise.reject());
-            const TAB_TITLE = 'my*tab';
+            const TAB_TITLE = 'My*tab';
             document.body.innerHTML = `<span class='_15ytj'>${TAB_TITLE}</span>`;
 
             // when
@@ -146,7 +145,7 @@ describe('ContentScript', () => {
 
         it('should not throw error when there will be no tab element', async () => {
             // given
-            const PAGE_TITLE = 'page-title';
+            const PAGE_TITLE = 'Page-title';
             document.body.innerHTML = `<h1 class='TTPMB'>${PAGE_TITLE}</h1>`;
 
             // when
@@ -158,7 +157,7 @@ describe('ContentScript', () => {
 
         it('should update content when page will be new', async () => {
             // given
-            const PAGE_TITLE = 'page-title';
+            const PAGE_TITLE = 'Page-title';
             contentScript.lastPage = null;
             document.body.innerHTML = `<h1 class='TTPMB'>${PAGE_TITLE}</h1>`;
 
@@ -181,5 +180,19 @@ describe('ContentScript', () => {
             // then
             expect(contentResolverMock.updatePageContent).not.toHaveBeenCalledWith(PAGE_TITLE);
         });
+
+        it('should convert page and tab title to pascal case', async () => {
+            // given
+            const PAGE_TITLE = 'Page title';
+            const TAB_TITLE = 'next tab';
+            const EXPECTED  = 'PageTitleNextTab';
+            document.body.innerHTML = `<h1 class='TTPMB'>${PAGE_TITLE}</h1><span class='_15ytj'>${TAB_TITLE}</span>`;
+
+            // when
+            await contentScript.pageClickHandler();
+
+            // then
+            expect(contentScript.lastPage).toEqual(EXPECTED);
+        })
     });
 });

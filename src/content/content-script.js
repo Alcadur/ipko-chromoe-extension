@@ -65,14 +65,34 @@ class ContentScript {
      * @private
      */
     pageChangeHandler() {
-        const emptyElement = { innerText: '' };
-        const newTab = (this.query.one(this.selectedTabSelector) || emptyElement).innerText || '';
-        const newPage = ((this.query.one(this.titleSelector) || emptyElement).innerText + newTab) || '';
+        const newTab = this.getInnerTextAsPascalCase(this.selectedTabSelector);
+        const newPage = this.getInnerTextAsPascalCase(this.titleSelector) + newTab;
 
         if (newPage !== this.lastPage) {
             this.lastPage = newPage;
             this.contentResolver.updatePageContent(newPage);
         }
+    }
+
+    /**
+     * @private
+     * @param {string} selector
+     * @return {string}
+     */
+    getInnerTextAsPascalCase(selector) {
+        const emptyElement = { innerText: '' };
+        const text = (this.query.one(selector) || emptyElement).innerText;
+
+        if(!text) {
+            return '';
+        }
+
+        return text.split(' ')
+            .map(variable => {
+                const firstLetter = variable.substr(0, 1).toUpperCase();
+                return firstLetter + variable.substr(1);
+            })
+            .join('');
     }
 }
 

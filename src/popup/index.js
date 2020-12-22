@@ -3,6 +3,8 @@
 
 const messageService = messageServiceFactory();
 const getRecipientButton = query.one('#getRecipients');
+const tabUtils = tabUtilsProvider();
+
 tabUtils.getActiveTabs((tabs) => {
     const isPkoPage = !!tabs[0].url.match(/ipko\.pl/);
 

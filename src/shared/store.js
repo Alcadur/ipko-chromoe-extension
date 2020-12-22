@@ -47,6 +47,18 @@ class Storage {
     getRecipients() {
         return this.get(this.RECIPIENTS_KEY);
     }
+
+    /**
+     * @param {Recipient} recipient
+     * @return {Promise<Recipient[]> | Promise<any>}
+     */
+    addReRecipient(recipient) {
+        return this.getRecipients().then( recipients => {
+            recipients.push(recipient);
+
+            return this.saveRecipients(recipients);
+        });
+    }
 }
 
 /**

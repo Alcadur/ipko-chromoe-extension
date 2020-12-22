@@ -20,6 +20,12 @@ class ContentResolver {
             await this.paymentLiveRecipientSearch.init();
         });
 
+        map.set('PotwierdźDodanie', async () => {
+            await this.wait.untilLoaderGone();
+            await this.wait.for(this.confirmRecipientAddingForm.submitButtonSelector)
+            this.confirmRecipientAddingForm.init();
+        });
+
         return map;
     })();
 
@@ -31,19 +37,22 @@ class ContentResolver {
      * @param {CollectData} collectData
      * @param {RecipientsListSearch} recipientsListSearch
      * @param {PaymentLiveRecipientSearch} paymentLiveRecipientSearch
+     * @param {ConfirmRecipientAddingForm} confirmRecipientAddingForm
      */
     constructor(
         query,
         wait,
         collectData,
         recipientsListSearch,
-        paymentLiveRecipientSearch
+        paymentLiveRecipientSearch,
+        confirmRecipientAddingForm
     ) {
         this.query = query;
         this.wait = wait;
         this.collectData = collectData;
         this.recipientsListSearch = recipientsListSearch;
         this.paymentLiveRecipientSearch = paymentLiveRecipientSearch;
+        this.confirmRecipientAddingForm = confirmRecipientAddingForm;
     }
 
     updatePageContent(pageTitle) {
@@ -60,7 +69,8 @@ function contentResolverFactory() {
         waitFactory(),
         collectDataFactory(),
         recipientsListSearchFactory(),
-        paymentLiveRecipientSearchFactory()
+        paymentLiveRecipientSearchFactory(),
+        confirmRecipientAddingFormFactory()
     );
 }
 
