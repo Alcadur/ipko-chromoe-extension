@@ -1,15 +1,15 @@
 import { viewManagerProvider } from './view-manager.js';
-import { EDIT_RECIPIENT, RECIPIENTS_LIST } from './options-urls.js';
+import { DASHBOARD, EDIT_RECIPIENT } from './options-urls.js';
 
+const DEFAULT_VIEW = DASHBOARD();
 const viewManager = viewManagerProvider();
 
 viewManager.addDynamicUrlPattern(EDIT_RECIPIENT.pattern);
 
-viewManager.load(location.hash.substring(1) || RECIPIENTS_LIST());
+viewManager.load(location.hash.substring(1) || DEFAULT_VIEW);
 
 window.addEventListener('hashchange', () => {
-    const view = location.hash.substring(1);
+    const view = location.hash.substring(1) || DEFAULT_VIEW;
 
     viewManager.load(view);
-
 }, false)

@@ -39,6 +39,7 @@ module.exports = function(config) {
       { pattern: 'src/options/views/recipients/shared/**/*.js', type: 'module' },
       { pattern: 'src/options/views/recipients/edit/*.controller*.js', type: 'module' },
       { pattern: 'src/options/views/recipients/add/*.controller*.js', type: 'module' },
+      { pattern: 'src/options/views/dashboard/*.controller*.js', type: 'module' },
     ],
 
 

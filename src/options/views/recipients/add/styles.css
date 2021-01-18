@@ -4,10 +4,6 @@
 }
 
 a.back-button {
-    display: inline-block;
-    height: 70px;
-    width: 70px;
+    font-size: 70px;
     margin-right: 35px;
-    background: url('/resources/back.png') no-repeat;
-    background-size: contain;
 }

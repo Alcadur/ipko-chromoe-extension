@@ -1,7 +1,7 @@
 'use strict';
 // TODO: write tests (and/or refactor)
 
-import { ADD_RECIPIENT, EDIT_RECIPIENT } from '../../options-urls.js';
+import { ADD_RECIPIENT, DASHBOARD, EDIT_RECIPIENT } from '../../options-urls.js';
 
 const tableBody = query.one('tbody');
 
@@ -35,3 +35,4 @@ function addRow(recipient) {
 }
 
 query.one('#addRecipient').addEventListener('click', () => location.hash = ADD_RECIPIENT())
+query.one('a.back-button').addEventListener('click', () => location.hash = DASHBOARD());
