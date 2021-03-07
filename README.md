@@ -28,7 +28,8 @@ bank credential or any other sensitive data.
  - [ ] edit account data
  - [ ] full extension options page
  - [ ] wiki page (in polish)
- 
+     
+ - [x] handle multiple recipient names (custom names)
  - [x] automatically save recipient after confirm it on the bank website
  - [x] possibility to have multiple transaction titles and amount- for one recipient
  - [x] format account number by a pattern: `/^([A-Za-z]{0,2}\d{2})\s*|(\d{4})\s*/g`
@@ -45,4 +46,3 @@ bank credential or any other sensitive data.
  - [ ] Integrate extension with leasing portal
  - [ ] Improve popup message layout
  - [ ] add search in options recipients list
- - [ ] handle multiple recipient names (custom names)
