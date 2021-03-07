@@ -75,9 +75,13 @@ class PaymentLiveRecipientSearch {
         const saveRegexpString = this.searchInputField.value
             .replace(/([()\[\]?])/g, '\\$1')
         const filterExpresion = new RegExp(saveRegexpString, 'i');
-        // this.filteredRecipients.length = 0;
-        this.recipients.filter(recipient => filterExpresion.test(recipient.recipient))
+        // TODO: tests for clear array
+        this.filteredRecipients.length = 0;
+        this.recipients.filter(recipient => filterExpresion.test(recipient.recipient + ' ' + recipient.aliases.join(' ') ))
             .forEach(recipient => {
+                // TODO: tests - move from else statement
+                this.filteredRecipients.push(recipient);
+
                 if (recipient.payments && recipient.payments.length) {
                     recipient.payments.forEach((payment, index) => {
                         const updated = {
@@ -87,8 +91,6 @@ class PaymentLiveRecipientSearch {
                         };
                         this.filteredRecipients.push(updated);
                     })
-                } else {
-                    this.filteredRecipients.push(recipient);
                 }
             });
 

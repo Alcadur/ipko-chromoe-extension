@@ -73,14 +73,19 @@ class CollectData {
         this.query.one(`${this.layerSelector} .collected-data-number`).textContent = this.currentRowIndex;
     }
 
+    // TODO: tests for alias
     async getData(index) {
+        const alias = this.query.all(this.listTableSelector + ' tr')[index]
+            .querySelector('._3gND8').textContent.trim();
+
         await this.enterTo(index);
         const fromNumber = (this.query.one('._3pHQr') || {}).innerText || '';
         this.recipients.push({
             fromNumber,
             recipient: this.query.one('[name$="data.recipient.name"]').value,
             recipientNumber: this.query.one('[name$="data.recipient.account.number"]').value,
-            title: this.query.one('[name$="data.title"]').value
+            title: this.query.one('[name$="data.title"]').value,
+            aliases: [alias]
         });
     }
 

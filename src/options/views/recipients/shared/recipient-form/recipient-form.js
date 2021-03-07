@@ -267,7 +267,7 @@ export class RecipientForm {
             this.form[field].value = recipient[field] || '';
         });
 
-        recipient.aliases.forEach(alias => {
+        (recipient.aliases || []).forEach(alias => {
             this.insertAlias(alias).then();
         })
 
