@@ -37,10 +37,13 @@ export class RecipientForm {
     /**
      * @param {Query} query
      * @param {TemplateHelper} templateHelper
+     * @param {Wait} wait
      */
-    constructor(query, templateHelper) {
+    constructor(query, templateHelper, wait) {
         this.query = query;
         this.templateHelper = templateHelper;
+        this.wait = wait;
+        this.wait.setTimeout(10);
 
         this.createForm()
 
@@ -64,9 +67,47 @@ export class RecipientForm {
         this.fieldsIds.forEach(field => {
             this.fieldsInputs[field] = this.query.one(`#${field}`, this.form);
         })
+        // TODO: extract to method
+        // TODO: tests
+        const aliasesContainer = this.query.one('.aliases-container', this.form);
+        aliasesContainer.addEventListener('click', (event) => {
+            if (event.target.classList.contains('aliases-container')) {
+                this.query.one('#aliasesInput').focus();
+            }
+        });
+        const inputMirror = this.query.one('#aliasInputMirror', this.form);
 
+        this.query.one('#aliasesInput', this.form).addEventListener('input', function () {
+            inputMirror.textContent = this.value;
+        });
+
+        this.query.one('#aliasesInput', this.form).addEventListener('keypress', async (event) => {
+            if (event.key === 'Enter' && !!event.target.value) {
+                const newAliasElement = this.templateHelper.getFirstTemplateNode('#newAlias', this.form)
+                this.query.one('.label', newAliasElement).textContent = event.target.value;
+                event.target.value = '';
+                event.target.dispatchEvent(new Event('input'));
+                this.removeAliasHandle(newAliasElement);
+                aliasesContainer.insertBefore(newAliasElement, inputMirror);
+                await this.wait.for('.just-created');
+                newAliasElement.classList.remove('just-created');
+                newAliasElement.classList.add('alias');
+            }
+        });
+
+        // ***********************
         this.createPaymentRows();
         this.disabledRemoveButtonIfLast();
+    }
+
+    // TODO: tests
+    /**
+     * @param {HTMLElement} element
+     */
+    removeAliasHandle(element) {
+        this.query.one('.remove', element).addEventListener('click', () => {
+            element.remove()
+        });
     }
 
     /**
@@ -260,5 +301,5 @@ export class RecipientForm {
 }
 
 export function recipientFormFactory() {
-    return new RecipientForm(queryFactory(), templateHelperFactory());
+    return new RecipientForm(queryFactory(), templateHelperFactory(), waitFactory());
 }

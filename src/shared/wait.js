@@ -8,6 +8,7 @@
 class Wait {
     BASE_TIMEOUT_IN_MS = 300;
     trialCount = 0;
+    timeout = this.BASE_TIMEOUT_IN_MS
 
     constructor(query) {
         /**
@@ -15,6 +16,19 @@ class Wait {
          */
         this.query = query;
     }
+
+    // TODO: tests
+    resetTimeout() {
+        this.timeout = this.BASE_TIMEOUT_IN_MS;
+    }
+
+    /**
+     * @param {number} millis
+     */
+    setTimeout(millis) {
+        this.timeout = millis;
+    }
+    //*******
 
     /**
      * Resolve when the element will exist in DOM by a given number of trials.
@@ -39,6 +53,7 @@ class Wait {
      * @param {function} promiseReject
      * @param {number} trialLimit
      */
+    // TODO: update tests
     forElement(selector, promiseResolver, promiseReject, trialLimit) {
         setTimeout(() => {
             if (this.trialCount >= trialLimit) {
@@ -54,7 +69,7 @@ class Wait {
                 this.trialCount += 1;
                 this.forElement(selector, promiseResolver, promiseReject, trialLimit);
             }
-        }, this.BASE_TIMEOUT_IN_MS)
+        }, this.timeout)
     }
 
     /**

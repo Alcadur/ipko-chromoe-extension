@@ -9,6 +9,83 @@ label {
     width: 120px;
 }
 
+[for='aliasesInput'] + #aliasesInput {
+    position: absolute;
+    left: 0;
+    width: 0;
+    opacity: 0;
+}
+
+.aliases-container {
+    display: inline-flex;
+    width: 100%;
+    padding: 5px 3px;
+
+    flex-wrap: wrap;
+    background: #fff;
+    border: 1px solid #767676;
+    align-items: center;
+}
+
+#aliasesInput:focus + .aliases-container {
+    outline: 1px black solid;
+}
+
+.aliases-container #aliasInputMirror,
+.aliases-container .new-alias {
+    font-size: 17px;
+}
+
+.aliases-container #aliasInputMirror {
+    display: inline-flex;
+    height: 14px;
+    align-items: center;
+}
+
+.aliases-container #aliasInputMirror:after{
+    content: '|';
+    position: relative;
+    bottom: 2px;
+    font-weight: 100;
+    visibility: hidden;
+}
+
+#aliasesInput:focus + .aliases-container #aliasInputMirror:after{
+    visibility: visible;
+}
+
+.aliases-container .alias {
+    display: inline-flex;
+    font-size: 12px;
+
+    height: 11px;
+    padding: 3px;
+    border-radius: 3px;
+    margin-right: 4px;
+
+    background: #d7cece;
+    align-items: center;
+}
+
+.aliases-container .alias .remove {
+    display: inline-flex;
+    width: 1em;
+    height: 1em;
+    margin-left: 3px;
+
+    border-radius: 50%;
+    background-color: #9f8282;
+    color: #e2e2e2;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.aliases-container .new-alias {
+    transition-property: font-size, background-color, border-radius, margin-bottom;
+    transition-duration: 1s;
+}
+
 #payments {
     margin-bottom: 20px;
 }

@@ -9,6 +9,14 @@ export const recipientFormTemplate = `
         <input id="recipient" type="text">
     </div>
     <div class="row">
+        <label for="aliasesInput">Aliasy</label>
+        <input type="text" id="aliasesInput">
+        <div class="aliases-container">
+            <span id="aliasInputMirror"></span>
+        </div>
+    </div>
+    </div>
+    <div class="row">
         <label for="recipientNumber">Na konto</label>
         <input id="recipientNumber" class="format-account" type="text">
     </div>
@@ -29,6 +37,13 @@ export const recipientFormTemplate = `
         <div class="row">
             <label for=""></label>
             <input id="" type="text">
+        </div>
+    </template>
+    
+    <template id="newAlias">
+        <div class="new-alias just-created">
+            <span class="label"></span>
+            <span class="remove">⛌</span>
         </div>
     </template>
 </form>

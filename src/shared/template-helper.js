@@ -6,11 +6,11 @@ class TemplateHelper {
 
     /**
      * @param {string} selector
-     * @param {Element} [parent = document.body]
-     * @return {Element}
+     * @param {HTMLElement} [parent = document.body]
+     * @return {HTMLElement}
      */
     getFirstTemplateNode(selector, parent = document.body) {
-        return /** @type {Element} */this.query.one(selector, parent)
+        return /** @type HTMLElement */this.query.one(selector, parent)
             .content
             .firstElementChild
             .cloneNode(true);
