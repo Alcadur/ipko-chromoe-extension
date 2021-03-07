@@ -17,3 +17,9 @@ export const RECIPIENTS_LIST = urlFactory('recipients');
 export const ADD_RECIPIENT = urlFactory(`${RECIPIENTS_LIST}/add`);
 export const EDIT_RECIPIENT = urlFactory(`${RECIPIENTS_LIST}/$recipientName/edit`);
 
+export const URLS = {
+    DASHBOARD,
+    RECIPIENTS_LIST,
+    ADD_RECIPIENT,
+    EDIT_RECIPIENT
+}

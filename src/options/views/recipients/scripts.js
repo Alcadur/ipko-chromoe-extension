@@ -2,8 +2,10 @@
 // TODO: write tests (and/or refactor)
 
 import { ADD_RECIPIENT, DASHBOARD, EDIT_RECIPIENT } from '../../options-urls.js';
+import { viewNavigatorProvider } from '../../view-navigator.js';
 
 const tableBody = query.one('tbody');
+const viewNavigator = viewNavigatorProvider();
 
 storage.getRecipients().then((recipients) => {
     recipients.sort((a,b) => {
@@ -23,16 +25,16 @@ storage.getRecipients().then((recipients) => {
  * @param {Recipient} recipient
  */
 function addRow(recipient) {
-    const row = query.one('#rowTemplate').content.firstElementChild.cloneNode(true);
+    const row = /**@type {HTMLElement}*/query.one('#rowTemplate').content.firstElementChild.cloneNode(true);
 
     row.querySelector('.source-account div').textContent = recipient.fromNumber;
     row.querySelector('.recipient-name div').textContent = recipient.recipient;
     row.querySelector('.recipient-account div').textContent = recipient.recipientNumber;
 
-    row.addEventListener('click',() => location.hash = EDIT_RECIPIENT(recipient.recipient))
+    viewNavigator.moveToOnClick(row, EDIT_RECIPIENT(recipient.recipient));
 
     tableBody.appendChild(row);
 }
 
-query.one('#addRecipient').addEventListener('click', () => location.hash = ADD_RECIPIENT())
-query.one('a.back-button').addEventListener('click', () => location.hash = DASHBOARD());
+viewNavigator.moveToOnClick('#addRecipient', ADD_RECIPIENT());
+viewNavigator.moveToOnClick('a.back-button', DASHBOARD());

@@ -3,6 +3,7 @@
 import { viewManagerProvider } from '../../../view-manager.js';
 import { recipientFormFactory } from '../shared/recipient-form/recipient-form.js';
 import { RECIPIENTS_LIST } from '../../../options-urls.js';
+import { viewNavigatorProvider } from '../../../view-navigator.js';
 
 export class RecipientEditController {
     /**
@@ -11,12 +12,21 @@ export class RecipientEditController {
      * @param {Storage} store
      * @param {RecipientForm} recipientForm
      * @param {DialogService} dialogService
+     * @param {ViewNavigator} viewNavigator
      */
-    constructor(viewManager, query, store, recipientForm, dialogService) {
+    constructor(
+        viewManager,
+        query,
+        store,
+        recipientForm,
+        dialogService,
+        viewNavigator
+    ) {
         this.query = query;
         this.store = store;
         this.recipientForm = recipientForm;
         this.dialogService = dialogService;
+        this.viewNavigator = viewNavigator;
         this.recipientForm.appendFormTo('#editForm');
         this.getRecipientByName(viewManager.getPathVariables().recipientName).then((recipient) => {
             this.recipientForm.update(recipient);
@@ -27,7 +37,7 @@ export class RecipientEditController {
             await this.saveAction();
         });
 
-        query.one('.back-button').addEventListener('click', () => location.hash = RECIPIENTS_LIST())
+        viewNavigator.moveToOnClick('.back-button', RECIPIENTS_LIST());
     }
 
     /**
@@ -56,10 +66,17 @@ export class RecipientEditController {
 
         this.store.saveRecipients(recipients).then();
 
-        location.hash = 'recipients';
+        this.viewNavigator.moveTo(RECIPIENTS_LIST());
     }
 }
 
 export function recipientEditControllerFactory() {
-    return new RecipientEditController(viewManagerProvider(), queryFactory(), storageFactory(), recipientFormFactory(), dialogServiceFactory())
+    return new RecipientEditController(
+        viewManagerProvider(),
+        queryFactory(),
+        storageFactory(),
+        recipientFormFactory(),
+        dialogServiceFactory(),
+        viewNavigatorProvider()
+    )
 }

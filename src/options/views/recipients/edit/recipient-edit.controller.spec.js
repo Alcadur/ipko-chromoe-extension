@@ -1,6 +1,7 @@
 'use strict';
 
 import { RecipientEditController } from './recipient-edit.controller.js';
+import { RECIPIENTS_LIST } from '../../../options-urls.js';
 
 describe('RecipientEditController', () => {
     let viewManagerMock;
@@ -9,6 +10,7 @@ describe('RecipientEditController', () => {
     let mockRecipients;
     let recipientFormMock;
     let dialogServiceMock
+    let viewNavigatorMock;
 
     beforeEach(() => {
         document.body.innerHTML = `<button class="back-button"></button>
@@ -39,6 +41,7 @@ describe('RecipientEditController', () => {
         recipientFormMock.update.and.returnValue(Promise.resolve());
         recipientFormMock.isValid.and.returnValue(true);
         dialogServiceMock = jasmine.createSpyObj('messageService', ['open']);
+        viewNavigatorMock = jasmine.createSpyObj('viewNavigator', ['moveToOnClick', 'moveTo'])
     });
 
     describe('constructor', () => {
@@ -109,14 +112,11 @@ describe('RecipientEditController', () => {
         });
 
         it('should redirect to recipient list after save', async () => {
-            // given
-            location.hash = 'edit';
-
             // when
             await controller.saveAction();
 
             // then
-            expect(location.hash).toEqual('#recipients')
+            expect(viewNavigatorMock.moveTo).toHaveBeenCalledOnceWith(RECIPIENTS_LIST())
         });
 
         it('should show modal information when form will be invalid', async () => {
@@ -133,6 +133,6 @@ describe('RecipientEditController', () => {
     });
 
     function testRecipientEditControllerFactory() {
-        return new RecipientEditController(viewManagerMock, queryFactory(), storeMock, recipientFormMock, dialogServiceMock);
+        return new RecipientEditController(viewManagerMock, queryFactory(), storeMock, recipientFormMock, dialogServiceMock, viewNavigatorMock);
     }
 });

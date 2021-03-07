@@ -2,6 +2,7 @@
 
 import { recipientFormFactory } from '../shared/recipient-form/recipient-form.js';
 import { RECIPIENTS_LIST } from '../../../options-urls.js';
+import { viewNavigatorProvider } from '../../../view-navigator.js';
 
 export class RecipientAddController {
     /**
@@ -16,18 +17,26 @@ export class RecipientAddController {
      * @param {RecipientForm} recipientForm
      * @param {Storage} store
      * @param {DialogService} dialogService
+     * @param {ViewNavigator} viewNavigator
      */
-    constructor(query, recipientForm, store, dialogService) {
+    constructor(
+        query,
+        recipientForm,
+        store,
+        dialogService,
+        viewNavigator
+    ) {
         this.dialogService = dialogService;
         this.store = store;
         this.recipientForm = recipientForm;
+        this.viewNavigator = viewNavigator;
         recipientForm.appendFormTo('#addForm');
 
         query.one('#saveButton').addEventListener('click', () => {
             this.saveAction().then();
         });
 
-        query.one('.back-button').addEventListener('click', () => location.hash = RECIPIENTS_LIST())
+        viewNavigator.moveToOnClick('.back-button', RECIPIENTS_LIST());
     }
 
     /**\
@@ -51,9 +60,15 @@ export class RecipientAddController {
         recipients.push(recipient);
         await this.store.saveRecipients(recipients);
 
-        location.hash = RECIPIENTS_LIST();
+        this.viewNavigator.moveTo(RECIPIENTS_LIST());
     }
 
 }
 
-export function recipientAddControllerFactory() { return new RecipientAddController(queryFactory(), recipientFormFactory(), storageFactory(), dialogServiceFactory())}
+export function recipientAddControllerFactory() { return new RecipientAddController(
+    queryFactory(),
+    recipientFormFactory(),
+    storageFactory(),
+    dialogServiceFactory(),
+    viewNavigatorProvider()
+)}

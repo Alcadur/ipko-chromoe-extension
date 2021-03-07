@@ -1,20 +1,17 @@
 'use strict';
 
 import { RECIPIENTS_LIST } from '../../options-urls.js';
+import { viewNavigatorProvider } from '../../view-navigator.js';
 
 export class DashboardController {
     /**
-     * @param {Query} query
-     * @param {Location} location
+     * @param {ViewNavigator} viewNavigator
      */
-    constructor(query, location) {
-        query.one('#recipients').addEventListener('click', () => {
-            location.hash = RECIPIENTS_LIST();
-        });
+    constructor(viewNavigator) {
+        viewNavigator.moveToOnClick('#recipients', RECIPIENTS_LIST());
     }
 }
 
 export function dashboardControllerFactory() { return new DashboardController(
-    queryFactory(),
-    location
+    viewNavigatorProvider(),
 ); }

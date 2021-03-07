@@ -13,6 +13,7 @@ describe('RecipientAddController', () => {
     let backButton;
     let recipients;
     let recipient;
+    let viewNavigatorMock;
 
     beforeEach(() => {
         document.body.innerHTML = `<button id="saveButton"></button><button class="back-button"></button>`;
@@ -30,6 +31,7 @@ describe('RecipientAddController', () => {
             saveRecipients: Promise.resolve()
         });
         dialogServiceMock = jasmine.createSpyObj('dialogService', ['open']);
+        viewNavigatorMock = jasmine.createSpyObj('viewNavigator', ['moveToOnClick', 'moveTo']);
 
         controller = testRecipientAddControllerFactory();
     });
@@ -57,25 +59,12 @@ describe('RecipientAddController', () => {
         });
 
         it('should bind event listener to back button', () => {
-            location.hash = 'test';
-            let eventHandler = () => {
-            };
-            spyOn(backButton, 'addEventListener').and.callFake((_, callback) => eventHandler = callback);
-
-            // when
-            controller = testRecipientAddControllerFactory();
-            eventHandler();
-
             // then
-            expect(backButton.addEventListener).toHaveBeenCalledWith('click', jasmine.any(Function));
-            expect(location.hash).toEqual(`#${RECIPIENTS_LIST()}`);
+            expect(viewNavigatorMock.moveToOnClick).toHaveBeenCalledOnceWith('.back-button', RECIPIENTS_LIST());
         });
     });
 
     describe('saveAction', () => {
-        beforeEach(() => {
-        });
-
         it('should show dialog and stop function when form will be invalid', async () => {
             // given
             recipientFormMock.isValid.and.returnValue(false);
@@ -112,20 +101,16 @@ describe('RecipientAddController', () => {
         });
 
         it('should redirect to recipients list after save', async () => {
-            // given
-            location.hash = 'test';
-
             // when
             await controller.saveAction();
 
             // then
-            expect(storeMock.saveRecipients).toHaveBeenCalled();
-            expect(location.hash).toEqual(`#${RECIPIENTS_LIST()}`);
+            expect(viewNavigatorMock.moveTo).toHaveBeenCalledOnceWith(RECIPIENTS_LIST());
         });
     })
 
     function testRecipientAddControllerFactory() {
-        return new RecipientAddController(queryFactory(), recipientFormMock, storeMock, dialogServiceMock);
+        return new RecipientAddController(queryFactory(), recipientFormMock, storeMock, dialogServiceMock, viewNavigatorMock);
     }
 
 });

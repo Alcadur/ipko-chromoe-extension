@@ -2,33 +2,24 @@ import { DashboardController } from './dashboard.controller.js';
 import { RECIPIENTS_LIST } from '../../options-urls.js';
 
 describe('Dashboard controller', () => {
-    let controller;
-    let fakeLocation
-    let buttons;
+    const BUTTON_SELECTOR = '#recipients';
+    let viewNavigatorMock;
 
     beforeEach(() => {
-        fakeLocation = /**@type {Location}*/{};
-        document.body.innerHTML = '<button id="recipients">';
-
-        buttons = {
-            recipients: document.querySelector('#recipients')
-        }
+        viewNavigatorMock = jasmine.createSpyObj('viewNavigator', ['moveToOnClick']);
     });
 
     describe('constructor', () => {
         it('should add action to navigate to recipients', () => {
-            // given
+            // when
             testControllerFactory();
 
-            // when
-            buttons.recipients.click();
-
             // then
-            expect(fakeLocation.hash).toEqual(RECIPIENTS_LIST());
+            expect(viewNavigatorMock.moveToOnClick).toHaveBeenCalledOnceWith(BUTTON_SELECTOR, RECIPIENTS_LIST());
         });
     });
 
     function testControllerFactory() {
-        return new DashboardController(queryFactory(), fakeLocation);
+        return new DashboardController(viewNavigatorMock);
     }
 });
