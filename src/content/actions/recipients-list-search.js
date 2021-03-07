@@ -4,12 +4,15 @@ class RecipientsListSearch {
 
     /**
      * @param {Query} query
+     * @param {Storage} store
      */
-    constructor(query) {
+    constructor(query, store) {
         this.query = query;
+        this.store = store;
     }
 
-    init() {
+    // TODO: tests
+    async init() {
         this.table = this.query.one('tbody.iwUhV');
         if (!this.table) {
             return;
@@ -18,11 +21,19 @@ class RecipientsListSearch {
         this.searchInput = this.query.one('[name$="data.filterForm.recipient"]');
         this.searchInput.addEventListener('input', () => this.searchInputEventHandler());
 
-        this.rows.forEach(row => {
-            const name = row.querySelector('._3gND8').innerText.toLowerCase();
-            const longName = row.querySelector('._2iYRB').innerText.toLowerCase();
+        const recipients = await this.store.getRecipients();
 
-            row.setAttribute('data-ipko-plus-search', `${name} ${longName}`);
+        this.rows.forEach(row => {
+            const longName = row.querySelector('._2iYRB').innerText.toLowerCase();
+            let searchData = `${longName}`;
+
+            const recipient = recipients
+                .find(recipient => recipient.recipient.toLowerCase() === longName.toLowerCase())
+            if (recipient) {
+                searchData += ' ' + recipient.aliases.join(' ');
+            }
+
+            row.setAttribute('data-ipko-plus-search', searchData.toLowerCase());
         });
     }
 
@@ -32,7 +43,8 @@ class RecipientsListSearch {
             return;
         }
         this.hideAll();
-        this.table.querySelectorAll(`tr[data-ipko-plus-search*="${this.searchInput.value}"]`)
+        // TODO: tests for .toLowerCase
+        this.table.querySelectorAll(`tr[data-ipko-plus-search*="${this.searchInput.value.toLowerCase()}"]`)
             .forEach(row => this.showOne(row));
     }
 
@@ -63,7 +75,7 @@ class RecipientsListSearch {
 /**
  * @returns {RecipientsListSearch}
  */
-function recipientsListSearchFactory() { return new RecipientsListSearch(queryFactory()); }
+function recipientsListSearchFactory() { return new RecipientsListSearch(queryFactory(), storageFactory()); }
 
 /**
  * @type {RecipientsListSearch}
