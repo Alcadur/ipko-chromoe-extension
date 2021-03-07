@@ -94,13 +94,19 @@ class PaymentLiveRecipientSearch {
                 }
             });
 
-        this.filteredRecipients.forEach(recipient => {
+        this.filteredRecipients.forEach((recipient, index) => {
             const parsedTemplate = this.rowTemplate.cloneNode(true);
             parsedTemplate.textContent = recipient.recipient;
 
             if (recipient.paymentTitle) {
                 parsedTemplate.textContent += ` (${recipient.paymentTitle})`;
             }
+
+            // TODO: tests
+            parsedTemplate.addEventListener('click', () => {
+                this.currentSelectedIndex = index;
+                this.enterHandle()
+            })
 
             list.appendChild(parsedTemplate);
         });

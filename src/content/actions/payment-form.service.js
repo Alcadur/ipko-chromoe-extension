@@ -19,7 +19,8 @@ class PaymentFormService {
         this.fillRecipient(recipient.recipient);
         this.fillTargetAccount(recipient.recipientNumber);
 
-        if (recipient.payments) {
+        // TODO: tests
+        if (recipient.payments && recipient.paymentIndex !== undefined) {
             const payment = recipient.payments[recipient.paymentIndex]
             this.changeTitle(payment.title);
             this.changeAmount(payment.amount);
