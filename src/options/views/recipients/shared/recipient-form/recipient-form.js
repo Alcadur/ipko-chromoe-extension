@@ -33,6 +33,11 @@ export class RecipientForm {
      * @type Element
      */
     form;
+    /**
+     * @private
+     * @type {string[]}
+     */
+    aliases = []
 
     /**
      * @param {Query} query
@@ -76,24 +81,34 @@ export class RecipientForm {
             }
         });
         const inputMirror = this.query.one('#aliasInputMirror', this.form);
-
-        this.query.one('#aliasesInput', this.form).addEventListener('input', function () {
+        const aliasInput = this.query.one('#aliasesInput', this.form);
+        aliasInput.addEventListener('input', function () {
             inputMirror.textContent = this.value;
         });
 
-        this.query.one('#aliasesInput', this.form).addEventListener('keypress', async (event) => {
-            if (event.key === 'Enter' && !!event.target.value) {
-                const newAliasElement = this.templateHelper.getFirstTemplateNode('#newAlias', this.form)
-                this.query.one('.label', newAliasElement).textContent = event.target.value;
+        aliasInput.addEventListener('keypress', async (event) => {
+            const value = event.target.value.trim();
+            if (event.key === 'Enter' && !!value) {
                 event.target.value = '';
                 event.target.dispatchEvent(new Event('input'));
-                this.removeAliasHandle(newAliasElement);
-                aliasesContainer.insertBefore(newAliasElement, inputMirror);
-                await this.wait.for('.just-created');
-                newAliasElement.classList.remove('just-created');
-                newAliasElement.classList.add('alias');
+                if (this.aliases.indexOf(value) !== -1) {
+                    return;
+                }
+                await this.insertAlias(value, true);
             }
         });
+
+        aliasInput.addEventListener('blur', async (event) => {
+            const value = event.target.value.trim();
+            event.target.value = '';
+            event.target.dispatchEvent(new Event('input'));
+
+            if (this.aliases.indexOf(value) !== -1 || !value) {
+                return;
+            }
+
+            await this.insertAlias(value, true);
+        })
 
         // ***********************
         this.createPaymentRows();
@@ -102,17 +117,41 @@ export class RecipientForm {
 
     // TODO: tests
     /**
+     * @param {string} alias
+     * @param {boolean} [isNew=false]
+     */
+    async insertAlias(alias, isNew = false) {
+        const newAliasElement = this.templateHelper.getFirstTemplateNode('#newAlias', this.form)
+        this.query.one('.label', newAliasElement).textContent = alias;
+        this.removeAliasHandle(newAliasElement);
+        this.query.one('.aliases-container', this.form)
+            .insertBefore(newAliasElement, this.query.one('#aliasInputMirror', this.form));
+        this.aliases.push(alias);
+
+        if (isNew) {
+            await this.wait.for('.just-created');
+        }
+
+        newAliasElement.classList.remove('just-created');
+        newAliasElement.classList.add('alias');
+    }
+
+    // TODO: tests
+    /**
      * @param {HTMLElement} element
      */
     removeAliasHandle(element) {
         this.query.one('.remove', element).addEventListener('click', () => {
+            const value = this.query.one('.label', element).textContent;
+            const valueIndex = this.aliases.indexOf(value);
+            this.aliases.splice(valueIndex, 1);
             element.remove()
         });
     }
 
     /**
      * @private
-     * @return {Element}
+     * @return {HTMLElement}
      */
     createPaymentRows() {
         const titleFieldsWrapper = this.templateHelper.getFirstTemplateNode('#rowTemplate', this.form)
@@ -228,6 +267,10 @@ export class RecipientForm {
             this.form[field].value = recipient[field] || '';
         });
 
+        recipient.aliases.forEach(alias => {
+            this.insertAlias(alias).then();
+        })
+
         if (recipient.payments && recipient.payments.length) {
             this.paymentsFields = [];
             this.query.one('#payments .rows-wrapper').innerHTML = '';
@@ -250,6 +293,8 @@ export class RecipientForm {
         this.fieldsIds.forEach(field => {
             recipient[field] = this.fieldsInputs[field].value;
         });
+
+        recipient.aliases = this.aliases;
 
         recipient.payments = this.paymentsFields.map(paymentField => ({
             title: paymentField.title.value,

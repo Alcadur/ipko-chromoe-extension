@@ -8,6 +8,7 @@
  * @typedef {Object} Recipient
  * @property {(string|number)} fromNumber
  * @property {string} recipient
+ * @property {string[]} aliases
  * @property {(number|string)} recipientNumber
  * @property {Payment[]} payments
  */
